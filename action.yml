@@ -1,0 +1,129 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Blackout Secure Web Manifest Generator
+# Copyright © 2025-2026 Blackout Secure
+# Licensed under Apache License 2.0
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+name: 'Blackout Secure Web Manifest Generator'
+description: 'Generate W3C-compliant web manifest files for Progressive Web Apps with full customization'
+author: 'Blackout Secure'
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
+inputs:
+  # Required manifest members
+  name:
+    description: 'Application name (displayed to users)'
+    required: true
+
+  short_name:
+    description: 'Short application name (for limited space)'
+    required: true
+
+  description:
+    description: 'Description of the web application'
+    required: false
+
+  # URL members
+  start_url:
+    description: 'URL to load when launching the app'
+    required: true
+
+  scope:
+    description: 'Navigation scope of the app (default: /)'
+    required: false
+    default: '/'
+
+  id:
+    description: 'Unique identifier for the application'
+    required: false
+
+  # Display and orientation
+  display:
+    description: 'Display mode: fullscreen, standalone, minimal-ui, or browser (default: standalone)'
+    required: false
+    default: 'standalone'
+
+  orientation:
+    description: 'Default screen orientation: any, natural, landscape, portrait, portrait-primary, portrait-secondary, landscape-primary, landscape-secondary'
+    required: false
+
+  # Colors
+  theme_color:
+    description: 'Theme color for the application (hex, rgb, or named color)'
+    required: false
+
+  background_color:
+    description: 'Background color while loading (hex, rgb, or named color)'
+    required: false
+
+  # Internationalization
+  lang:
+    description: 'Primary language tag (e.g., en-US, fr, ja)'
+    required: false
+
+  dir:
+    description: 'Text direction: ltr, rtl, or auto'
+    required: false
+
+  # Icons and visual elements
+  icons:
+    description: 'JSON array of icon objects with src, sizes, type, and purpose properties'
+    required: true
+
+  shortcuts:
+    description: 'JSON array of shortcut objects with name, url, description, and icons properties'
+    required: false
+
+  categories:
+    description: 'Comma-separated list of application categories'
+    required: false
+
+  # Asset configuration
+  icons_dir:
+    description: 'Default directory path for icon assets (default: /icons/). Used for convenience when building icon URLs'
+    required: false
+    default: '/icons/'
+
+  # Page injection configuration
+  inject_manifest_link:
+    description: 'Inject manifest link into page files (default: true)'
+    required: false
+    default: 'true'
+
+  crossorigin_credentials:
+    description: 'Add crossorigin="use-credentials" to manifest link (default: false)'
+    required: false
+    default: 'false'
+
+  inject_manifest_link_exts:
+    description: 'File extensions to scan for page injection, space-separated. Recommended: html htm xhtml php phtml (default: html htm xhtml php phtml)'
+    required: false
+    default: 'html htm xhtml php phtml'
+
+  icon_validation:
+    description: 'Icon file validation mode: fail (fail action if missing), warn (warn if missing), or none (skip validation)'
+    required: false
+    default: 'warn'
+
+  # Output configuration
+  output_dir:
+    description: 'Directory to write the manifest file (default: public)'
+    required: false
+    default: 'public'
+
+  filename:
+    description: 'Output filename (default: site.webmanifest)'
+    required: false
+    default: 'site.webmanifest'
+
+outputs:
+  manifest_path:
+    description: 'Path to the generated manifest file'
+  manifest_json:
+    description: 'Generated manifest as JSON string'
