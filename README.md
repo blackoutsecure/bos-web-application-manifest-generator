@@ -156,3 +156,4 @@ Or let the action do it automatically with `inject_manifest_link: true`.
 ## License
 
 Apache License 2.0 - See [LICENSE](LICENSE) for details.
+
