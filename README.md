@@ -25,7 +25,7 @@ Generate W3C-compliant web manifest files for Progressive Web Apps with full cus
 - name: Generate Web Manifest
   uses: blackoutsecure/bos-web-application-manifest-generator@v1
   with:
-    public_dir: 'public'
+    public_dir: 'dist'
     favicons: false
     name: 'My App'
     short_name: 'App'
@@ -56,8 +56,8 @@ Use favicons mode for a quick setup with default favicon settings. This mode sup
 - name: Generate Web Manifest
   uses: blackoutsecure/bos-web-application-manifest-generator@v1
   with:
-    public_dir: 'public'
     favicons: true
+    public_dir: 'dist'
 ```
 
 This generates a manifest with default values:
@@ -95,7 +95,7 @@ Override specific defaults using `favicons_options`. You can customize any manif
 - name: Generate Web Manifest
   uses: blackoutsecure/bos-web-application-manifest-generator@v1
   with:
-    public_dir: 'public'
+    public_dir: 'dist'
     favicons: true
     favicons_options: |
       {
@@ -109,23 +109,23 @@ Override specific defaults using `favicons_options`. You can customize any manif
 
 ## Inputs
 
-| Input                  | Description                                                          | Default            |
-| ---------------------- | -------------------------------------------------------------------- | ------------------ |
-| `public_dir`           | Public directory where manifest will be written (e.g., public, dist) | **Required**       |
-| `favicons`             | Enable favicons mode (supports any favicon format)                   | **Required**       |
-| `name`                 | Application name                                                     | -                  |
-| `short_name`           | Short name for limited space                                         | -                  |
-| `description`          | Application description                                              | -                  |
-| `start_url`            | App launch URL                                                       | `/`                |
-| `scope`                | Navigation scope                                                     | `/`                |
-| `display`              | Display mode: `standalone`, `fullscreen`, `minimal-ui`, or `browser` | `standalone`       |
-| `theme_color`          | Theme color (hex)                                                    | -                  |
-| `background_color`     | Background color (hex)                                               | -                  |
-| `favicons_options`     | JSON object to override favicons defaults                            | -                  |
-| `icons`                | JSON array of icon objects (not required if favicons enabled)        | -                  |
-| `filename`             | Output manifest filename                                             | `site.webmanifest` |
-| `inject_manifest_link` | Auto-inject link tag into HTML pages                                 | `true`             |
-| `icon_validation`      | Icon validation: `fail`, `warn`, or `none`                           | `warn`             |
+| Input                  | Description                                                                 | Default            |
+| ---------------------- | --------------------------------------------------------------------------- | ------------------ |
+| `public_dir`           | Public directory where manifest will be written (e.g., dist, public, build) | **Required**       |
+| `favicons`             | Enable favicons mode (supports any favicon format)                          | **Required**       |
+| `name`                 | Application name                                                            | -                  |
+| `short_name`           | Short name for limited space                                                | -                  |
+| `description`          | Application description                                                     | -                  |
+| `start_url`            | App launch URL                                                              | `/`                |
+| `scope`                | Navigation scope                                                            | `/`                |
+| `display`              | Display mode: `standalone`, `fullscreen`, `minimal-ui`, or `browser`        | `standalone`       |
+| `theme_color`          | Theme color (hex)                                                           | -                  |
+| `background_color`     | Background color (hex)                                                      | -                  |
+| `favicons_options`     | JSON object to override favicons defaults                                   | -                  |
+| `icons`                | JSON array of icon objects (not required if favicons enabled)               | -                  |
+| `filename`             | Output manifest filename                                                    | `site.webmanifest` |
+| `inject_manifest_link` | Auto-inject link tag into HTML pages                                        | `true`             |
+| `icon_validation`      | Icon validation: `fail`, `warn`, or `none`                                  | `warn`             |
 
 See the [action.yml](action.yml) for all available inputs including internationalization, shortcuts, categories, and advanced options.
 
@@ -190,7 +190,7 @@ The action validates that icon files referenced in your manifest actually exist 
 - name: Generate Web Manifest
   uses: blackoutsecure/bos-web-application-manifest-generator@v1
   with:
-    public_dir: 'public'
+    public_dir: 'dist'
     favicons: false
     name: 'My App'
     icon_validation: 'fail'
@@ -218,7 +218,7 @@ Disable with `inject_manifest_link: false` or specify custom file extensions:
 - name: Generate Web Manifest
   uses: blackoutsecure/bos-web-application-manifest-generator@v1
   with:
-    public_dir: 'public'
+    public_dir: 'dist'
     favicons: false
     name: 'My App'
     inject_manifest_link_exts: 'html htm php'

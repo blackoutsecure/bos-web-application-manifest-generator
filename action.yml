@@ -123,7 +123,8 @@ inputs:
   # Output configuration
   public_dir:
     description: 'Public directory where the manifest file will be written (e.g., public, dist, build)'
-    required: true
+    required: false
+    default: 'dist'
 
   filename:
     description: 'Output manifest filename (default: site.webmanifest)'
