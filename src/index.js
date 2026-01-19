@@ -9,6 +9,22 @@
 const core = require('@actions/core');
 const fs = require('fs');
 const path = require('path');
+
+// Initialize artifact client (supports both old and new @actions/artifact APIs)
+let artifactClient = null;
+try {
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const artifact = require('@actions/artifact');
+    if (artifact?.DefaultArtifactClient) {
+      artifactClient = new artifact.DefaultArtifactClient();
+    } else if (artifact?.default?.uploadArtifact) {
+      artifactClient = artifact.default;
+    }
+  }
+} catch {
+  // Artifact client not available in local dev
+}
+
 const { generateManifest, validateManifest, processManifest } = require('./lib/manifest-generator');
 const { processPageFiles } = require('./lib/page-injector');
 const { validateIcons } = require('./lib/icon-validator');
@@ -31,14 +47,14 @@ async function run() {
     core.info('');
 
     // Get inputs from action configuration
-    const name = core.getInput('name');
-    const short_name = core.getInput('short_name');
+    const name = core.getInput('name') || defaults.name;
+    const short_name = core.getInput('short_name') || defaults.shortName;
     const description = core.getInput('description');
     const start_url = core.getInput('start_url') || defaults.startUrl;
     const scope = core.getInput('scope') || defaults.scope;
     const display = core.getInput('display') || defaults.display;
-    const theme_color = core.getInput('theme_color');
-    const background_color = core.getInput('background_color');
+    const theme_color = core.getInput('theme_color') || defaults.themeColor;
+    const background_color = core.getInput('background_color') || defaults.backgroundColor;
     const orientation = core.getInput('orientation');
     const lang = core.getInput('lang');
     const dir = core.getInput('dir');
@@ -56,6 +72,12 @@ async function run() {
     const icon_validation = core.getInput('icon_validation') || defaults.iconValidation;
     const favicons = core.getBooleanInput('favicons') === true;
     const faviconsOptionsInput = core.getInput('favicons_options');
+
+    // Artifact upload configuration
+    const upload_artifacts = core.getBooleanInput('upload_artifacts') !== false;
+    const artifact_name = core.getInput('artifact_name') || 'web-manifest';
+    const artifact_retention_days =
+      parseInt(core.getInput('artifact_retention_days') || '0', 10) || undefined;
 
     // Parse favicons_options from JSON input if provided
     let favicons_options = {};
@@ -76,6 +98,9 @@ async function run() {
       } catch (e) {
         core.warning(`Failed to parse icons JSON: ${e.message}`);
       }
+    } else if (!favicons) {
+      // Use default icons if not in favicons mode and no icons specified
+      icons = defaults.icons;
     }
 
     // Parse shortcuts from JSON input
@@ -151,6 +176,7 @@ async function run() {
       core.info(`   Crossorigin Credentials: ${crossorigin_credentials ? 'yes' : 'no'}`);
     }
     core.info(`   Icon Validation: ${icon_validation}`);
+    core.info(`   Upload Artifacts: ${upload_artifacts ? 'enabled' : 'disabled'}`);
     core.info('━'.repeat(50));
 
     // Generate manifest
@@ -204,6 +230,22 @@ async function run() {
     fs.writeFileSync(manifestPath, manifestJson, 'utf-8');
     core.info(`✅ Generated manifest: ${manifestPath}`);
     core.info(`   File size: ${Buffer.byteLength(manifestJson, 'utf8')} bytes`);
+
+    // Optional artifact upload
+    if (upload_artifacts && artifactClient) {
+      try {
+        const files = [manifestPath];
+        const uploadOptions = { retentionDays: artifact_retention_days };
+        core.info('');
+        core.info('📦 Uploading artifacts...');
+        await artifactClient.uploadArtifact(artifact_name, files, outputPath, uploadOptions);
+        core.info(`✅ Artifact uploaded: ${artifact_name}`);
+      } catch (err) {
+        core.warning(
+          `⚠️  Failed to upload artifacts: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
 
     // Inject manifest link into page files if enabled
     if (inject_manifest_link) {

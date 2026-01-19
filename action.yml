@@ -20,10 +20,12 @@ inputs:
   name:
     description: 'Application name (displayed to users)'
     required: false
+    default: ''
 
   short_name:
     description: 'Short application name (for limited space)'
     required: false
+    default: ''
 
   description:
     description: 'Description of the web application'
@@ -56,12 +58,14 @@ inputs:
 
   # Colors
   theme_color:
-    description: 'Theme color for the application (hex, rgb, or named color)'
+    description: 'Theme color for the application (hex, rgb, or named color) (default: #ffffff)'
     required: false
+    default: '#ffffff'
 
   background_color:
-    description: 'Background color while loading (hex, rgb, or named color)'
+    description: 'Background color while loading (hex, rgb, or named color) (default: #ffffff)'
     required: false
+    default: '#ffffff'
 
   # Internationalization
   lang:
@@ -122,14 +126,28 @@ inputs:
 
   # Output configuration
   public_dir:
-    description: 'Public directory where the manifest file will be written (e.g., public, dist, build)'
-    required: false
-    default: 'dist'
+    description: 'Public directory where the manifest file will be written (e.g., dist, public, build)'
+    required: true
 
   filename:
     description: 'Output manifest filename (default: site.webmanifest)'
     required: false
     default: 'site.webmanifest'
+
+  # Artifact upload configuration
+  upload_artifacts:
+    description: 'Upload generated manifest to GitHub artifacts (default: true)'
+    required: false
+    default: 'true'
+
+  artifact_name:
+    description: 'Name for the uploaded artifact (default: web-manifest)'
+    required: false
+    default: 'web-manifest'
+
+  artifact_retention_days:
+    description: 'Number of days to retain the artifact (1-90, default: repository settings)'
+    required: false
 
 outputs:
   manifest_path:

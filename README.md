@@ -109,25 +109,42 @@ Override specific defaults using `favicons_options`. You can customize any manif
 
 ## Inputs
 
-| Input                  | Description                                                                 | Default            |
-| ---------------------- | --------------------------------------------------------------------------- | ------------------ |
-| `public_dir`           | Public directory where manifest will be written (e.g., dist, public, build) | **Required**       |
-| `favicons`             | Enable favicons mode (supports any favicon format)                          | **Required**       |
-| `name`                 | Application name                                                            | -                  |
-| `short_name`           | Short name for limited space                                                | -                  |
-| `description`          | Application description                                                     | -                  |
-| `start_url`            | App launch URL                                                              | `/`                |
-| `scope`                | Navigation scope                                                            | `/`                |
-| `display`              | Display mode: `standalone`, `fullscreen`, `minimal-ui`, or `browser`        | `standalone`       |
-| `theme_color`          | Theme color (hex)                                                           | -                  |
-| `background_color`     | Background color (hex)                                                      | -                  |
-| `favicons_options`     | JSON object to override favicons defaults                                   | -                  |
-| `icons`                | JSON array of icon objects (not required if favicons enabled)               | -                  |
-| `filename`             | Output manifest filename                                                    | `site.webmanifest` |
-| `inject_manifest_link` | Auto-inject link tag into HTML pages                                        | `true`             |
-| `icon_validation`      | Icon validation: `fail`, `warn`, or `none`                                  | `warn`             |
+| Input                     | Description                                                                 | Default                                 |
+| ------------------------- | --------------------------------------------------------------------------- | --------------------------------------- |
+| `public_dir`              | Public directory where manifest will be written (e.g., dist, public, build) | **Required**                            |
+| `favicons`                | Enable favicons mode (supports any favicon format)                          | **Required**                            |
+| `name`                    | Application name                                                            | `""` (empty)                            |
+| `short_name`              | Short name for limited space                                                | `""` (empty)                            |
+| `description`             | Application description                                                     | -                                       |
+| `start_url`               | App launch URL                                                              | `/`                                     |
+| `scope`                   | Navigation scope                                                            | `/`                                     |
+| `display`                 | Display mode: `standalone`, `fullscreen`, `minimal-ui`, or `browser`        | `standalone`                            |
+| `theme_color`             | Theme color (hex)                                                           | `#ffffff`                               |
+| `background_color`        | Background color (hex)                                                      | `#ffffff`                               |
+| `favicons_options`        | JSON object to override favicons defaults                                   | -                                       |
+| `icons`                   | JSON array of icon objects (not required if favicons enabled)               | Android Chrome icons (192x192, 512x512) |
+| `filename`                | Output manifest filename                                                    | `site.webmanifest`                      |
+| `inject_manifest_link`    | Auto-inject link tag into HTML pages                                        | `true`                                  |
+| `icon_validation`         | Icon validation: `fail`, `warn`, or `none`                                  | `warn`                                  |
+| `upload_artifacts`        | Upload generated manifest to GitHub artifacts                               | `true`                                  |
+| `artifact_name`           | Name for the uploaded artifact                                              | `web-manifest`                          |
+| `artifact_retention_days` | Number of days to retain artifact (1-90)                                    | Repository settings                     |
 
 See the [action.yml](action.yml) for all available inputs including internationalization, shortcuts, categories, and advanced options.
+
+### Default Values
+
+When `favicons: false` (standard mode), the action uses these defaults:
+
+- **Name/Short Name**: Empty strings (`""`)
+- **Theme Color**: `#ffffff` (white)
+- **Background Color**: `#ffffff` (white)
+- **Display**: `standalone`
+- **Icons**: Android Chrome format icons at `/android-chrome-192x192.png` and `/android-chrome-512x512.png`
+- **Start URL**: `/`
+- **Scope**: `/`
+
+You can override any of these by explicitly setting the input values in your workflow.
 
 ## Favicons Mode
 
@@ -203,6 +220,65 @@ The action validates that icon files referenced in your manifest actually exist 
         }
       ]
 ```
+
+## Artifact Upload
+
+By default, the generated manifest file is automatically uploaded to GitHub artifacts for easy access and download. This is useful for:
+
+- Downloading generated manifests after workflow runs
+- Debugging manifest generation issues
+- Archiving manifests for compliance or auditing
+- Sharing manifests with team members
+
+### Default Behavior
+
+```yaml
+- name: Generate Web Manifest
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  with:
+    public_dir: 'dist'
+    favicons: false
+    name: 'My App'
+    # Artifacts enabled by default
+    # upload_artifacts: true
+    # artifact_name: 'web-manifest'
+```
+
+### Disable Artifacts
+
+Skip automatic artifact upload:
+
+```yaml
+- name: Generate Web Manifest
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  with:
+    public_dir: 'dist'
+    favicons: false
+    name: 'My App'
+    upload_artifacts: false
+```
+
+### Custom Artifact Configuration
+
+Customize artifact name and retention:
+
+```yaml
+- name: Generate Web Manifest
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  with:
+    public_dir: 'dist'
+    favicons: false
+    name: 'My App'
+    upload_artifacts: true
+    artifact_name: 'pwa-manifest'
+    artifact_retention_days: 30 # Keep for 30 days
+```
+
+**Artifact Retention:**
+
+- Default: Uses repository's default retention settings
+- Range: 1-90 days
+- Leave empty to use repository defaults
 
 ## Auto Page Injection
 
