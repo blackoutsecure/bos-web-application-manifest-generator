@@ -20,6 +20,7 @@ function validateIcons(icons, baseDir) {
     valid: true,
     missing: [],
     checked: 0,
+    checkedFiles: [],
   };
 
   if (!icons || icons.length === 0) {
@@ -37,7 +38,17 @@ function validateIcons(icons, baseDir) {
     const filePath = icon.src.startsWith('/') ? icon.src.slice(1) : icon.src;
     const fullPath = path.join(baseDir, filePath);
 
-    if (!fs.existsSync(fullPath)) {
+    const exists = fs.existsSync(fullPath);
+
+    results.checkedFiles.push({
+      src: icon.src,
+      path: fullPath,
+      sizes: icon.sizes || 'unspecified',
+      type: icon.type || 'unspecified',
+      exists,
+    });
+
+    if (!exists) {
       results.valid = false;
       results.missing.push({
         src: icon.src,

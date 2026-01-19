@@ -26,6 +26,7 @@ module.exports = {
     startUrl: '/',
     scope: '/',
     display: 'standalone',
+    orientation: 'any',
     themeColor: '#ffffff',
     backgroundColor: '#ffffff',
     name: '',
@@ -35,11 +36,19 @@ module.exports = {
         src: '/android-chrome-192x192.png',
         sizes: '192x192',
         type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/android-chrome-256x256.png',
+        sizes: '256x256',
+        type: 'image/png',
+        purpose: 'maskable',
       },
       {
         src: '/android-chrome-512x512.png',
         sizes: '512x512',
         type: 'image/png',
+        purpose: 'maskable',
       },
     ],
     iconsDir: '/icons/',
@@ -47,10 +56,6 @@ module.exports = {
     injectManifestLink: true,
     crossoriginCredentials: false,
     injectManifestLinkExts: ['html', 'htm'],
-    iconValidation: 'warn',
-    favicon: true,
-    faviconDir: '/',
-    faviconValidation: 'warn',
   },
 
   // W3C spec validation constants
@@ -68,33 +73,5 @@ module.exports = {
     ],
     textDirections: ['ltr', 'rtl', 'auto'],
     iconPurposes: ['monochrome', 'maskable', 'any'],
-  },
-
-  // Default favicon manifest
-  faviconDefaults: {
-    name: '',
-    short_name: '',
-    icons: [
-      {
-        src: '/android-chrome-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
-      },
-      {
-        src: '/android-chrome-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-      },
-    ],
-    theme_color: '#ffffff',
-    background_color: '#ffffff',
-    display: 'standalone',
-  },
-
-  // Icon validation modes
-  iconValidationModes: {
-    FAIL: 'fail',
-    WARN: 'warn',
-    NONE: 'none',
   },
 };

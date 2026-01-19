@@ -55,7 +55,7 @@ async function run() {
     const display = core.getInput('display') || defaults.display;
     const theme_color = core.getInput('theme_color') || defaults.themeColor;
     const background_color = core.getInput('background_color') || defaults.backgroundColor;
-    const orientation = core.getInput('orientation');
+    const orientation = core.getInput('orientation') || defaults.orientation;
     const lang = core.getInput('lang');
     const dir = core.getInput('dir');
     const id = core.getInput('id');
@@ -69,27 +69,13 @@ async function run() {
     )
       .split(/\s+/)
       .filter(Boolean);
-    const icon_validation = core.getInput('icon_validation') || defaults.iconValidation;
-    const favicon = core.getBooleanInput('favicon') !== false;
-    const favicon_dir = core.getInput('favicon_dir') || defaults.faviconDir;
-    const faviconValidation = core.getInput('favicon_validation') || defaults.faviconValidation;
-    const faviconOptionsInput = core.getInput('favicon_options');
+    const validate_manifest_assets = core.getBooleanInput('validate_manifest_assets') !== false;
 
     // Artifact upload configuration
     const upload_artifacts = core.getBooleanInput('upload_artifacts') !== false;
     const artifact_name = core.getInput('artifact_name') || 'web-manifest';
     const artifact_retention_days =
       parseInt(core.getInput('artifact_retention_days') || '0', 10) || undefined;
-
-    // Parse favicon_options from JSON input if provided
-    let favicon_options = {};
-    if (faviconOptionsInput) {
-      try {
-        favicon_options = JSON.parse(faviconOptionsInput);
-      } catch (e) {
-        core.warning(`Failed to parse favicon_options JSON: ${e.message}`);
-      }
-    }
 
     // Parse icons from JSON input
     let icons = [];
@@ -100,15 +86,10 @@ async function run() {
       } catch (e) {
         core.warning(`Failed to parse icons JSON: ${e.message}`);
       }
-    } else if (!favicon) {
-      // Use default icons if not in favicon mode and no icons specified
+    }
+
+    if (!iconsInput) {
       icons = defaults.icons;
-    } else if (favicon && !iconsInput) {
-      // In favicon mode, use default icons with favicon_dir path
-      icons = defaults.icons.map((icon) => ({
-        ...icon,
-        src: favicon_dir + icon.src.replace(/^\//, ''),
-      }));
     }
 
     // Parse shortcuts from JSON input
@@ -149,8 +130,6 @@ async function run() {
       icons,
       shortcuts,
       categories,
-      favicon,
-      favicon_options,
     };
 
     core.info('📋 Configuration:');
@@ -167,14 +146,6 @@ async function run() {
     core.info(`   Text Direction: ${dir || '(not set)'}`);
     core.info(`   App ID: ${id || '(not set)'}`);
     core.info(`   Icons Directory: ${icons_dir}`);
-    core.info(`   Favicon Mode: ${favicon ? 'enabled' : 'disabled'}`);
-    if (favicon) {
-      core.info(`   Favicon Dir: ${favicon_dir}`);
-      core.info(`   Favicon Validation: ${faviconValidation}`);
-    }
-    if (favicon && Object.keys(favicon_options).length > 0) {
-      core.info(`   Favicon Options: ${Object.keys(favicon_options).length} override(s) specified`);
-    }
     core.info(`   Icons: ${icons.length} defined`);
     core.info(`   Shortcuts: ${shortcuts.length} defined`);
     core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);
@@ -185,7 +156,7 @@ async function run() {
       core.info(`   Injection Extensions: ${inject_manifest_link_exts.join(', ')}`);
       core.info(`   Crossorigin Credentials: ${crossorigin_credentials ? 'yes' : 'no'}`);
     }
-    core.info(`   Icon Validation: ${icon_validation}`);
+    core.info(`   Manifest Asset Validation: ${validate_manifest_assets ? 'enabled' : 'disabled'}`);
     core.info(`   Upload Artifacts: ${upload_artifacts ? 'enabled' : 'disabled'}`);
     core.info('━'.repeat(50));
 
@@ -204,50 +175,23 @@ async function run() {
       core.info('✅ Manifest validation passed');
     }
 
-    // Validate favicon files if favicon mode is enabled and validation is not 'none'
-    if (favicon && faviconValidation !== 'none' && icons.length > 0) {
+    // Validate icon files if enabled (warn only)
+    if (validate_manifest_assets && icons.length > 0) {
       const baseDir = path.resolve(public_dir);
       const iconValidation = validateIcons(icons, baseDir);
 
-      if (iconValidation.missing.length > 0) {
-        const message = `Found ${iconValidation.missing.length} missing favicon file(s):`;
-        const details = iconValidation.missing.map(
-          (icon) => `   • ${icon.src} (${icon.sizes} @ ${icon.path})`
-        );
-
-        if (faviconValidation === 'fail') {
-          core.setFailed(`❌ Favicon validation failed: ${message}\n${details.join('\n')}`);
-          return;
-        } else if (faviconValidation === 'warn') {
-          core.warning(`⚠️  Favicon validation: ${message}\n${details.join('\n')}`);
-        }
-      } else if (iconValidation.checked > 0) {
-        core.info(`✅ Favicon validation passed (${iconValidation.checked} icon(s) verified)`);
+      if (iconValidation.checkedFiles.length > 0) {
+        core.info('🔍 Manifest asset check (icons):');
+        iconValidation.checkedFiles.forEach((icon) => {
+          const marker = icon.exists ? '✓' : '✕';
+          const level = icon.exists ? 'info' : 'warning';
+          const message = `   ${marker} ${icon.src} (${icon.sizes}) -> ${icon.path}`;
+          core[level](message);
+        });
       }
-    }
-
-    // Validate icon files if validation is enabled (standard mode only)
-    if (icon_validation !== 'none' && !favicon && icons.length > 0) {
-      const baseDir = path.resolve(public_dir);
-      const iconValidation = validateIcons(icons, baseDir);
 
       if (iconValidation.missing.length > 0) {
-        const message = `Found ${iconValidation.missing.length} missing icon file(s):`;
-        const details = iconValidation.missing.map(
-          (icon) => `   • ${icon.src} (${icon.sizes} @ ${icon.path})`
-        );
-
-        if (icon_validation === 'fail') {
-          core.setFailed(`❌ Icon validation failed: ${message}\n${details.join('\n')}`);
-          return;
-        } else if (icon_validation === 'warn') {
-          core.warning(`⚠️  ${message}`);
-          details.forEach((detail) => {
-            core.warning(detail);
-          });
-        }
-      } else if (iconValidation.checked > 0) {
-        core.info(`✅ Icon validation passed (${iconValidation.checked} icon(s) verified)`);
+        core.warning(`⚠️  Manifest asset check: ${iconValidation.missing.length} missing file(s)`);
       }
     }
 

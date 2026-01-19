@@ -17,28 +17,6 @@ const config = require('./project-config');
 function processManifest(cfg = {}) {
   const manifest = {};
 
-  // If favicon mode is enabled, apply defaults first
-  if (cfg.favicon) {
-    // Apply default favicon manifest values
-    const defaults = { ...config.faviconDefaults };
-
-    // Merge favicon_options overrides with defaults
-    if (cfg.favicon_options && typeof cfg.favicon_options === 'object') {
-      Object.assign(defaults, cfg.favicon_options);
-    }
-
-    // Apply defaults to config (but don't override explicitly set values)
-    Object.keys(defaults).forEach((key) => {
-      if (
-        cfg[key] === undefined ||
-        cfg[key] === '' ||
-        (Array.isArray(cfg[key]) && cfg[key].length === 0)
-      ) {
-        cfg[key] = defaults[key];
-      }
-    });
-  }
-
   // Required/recommended members according to W3C spec
 
   // name member - represents the name of the web application
@@ -91,16 +69,22 @@ function processManifest(cfg = {}) {
   // orientation member - default screen orientation
   if (cfg.orientation && config.validation.orientations.includes(cfg.orientation.toLowerCase())) {
     manifest.orientation = cfg.orientation.toLowerCase();
+  } else {
+    manifest.orientation = config.defaults.orientation;
   }
 
   // theme_color member - default theme color for the application
   if (cfg.theme_color && typeof cfg.theme_color === 'string') {
     manifest.theme_color = cfg.theme_color.trim();
+  } else {
+    manifest.theme_color = config.defaults.themeColor;
   }
 
   // background_color member - expected background color
   if (cfg.background_color && typeof cfg.background_color === 'string') {
     manifest.background_color = cfg.background_color.trim();
+  } else {
+    manifest.background_color = config.defaults.backgroundColor;
   }
 
   // lang member - language for the manifest's values
@@ -114,8 +98,10 @@ function processManifest(cfg = {}) {
   }
 
   // icons member - array of image resources
-  if (Array.isArray(cfg.icons)) {
+  if (Array.isArray(cfg.icons) && cfg.icons.length > 0) {
     manifest.icons = processIcons(cfg.icons);
+  } else {
+    manifest.icons = processIcons(config.defaults.icons);
   }
 
   // shortcuts member - array of shortcut items
@@ -237,6 +223,20 @@ function validateManifest(manifest) {
     manifest.icons.forEach((icon, index) => {
       if (!icon.src) {
         errors.push(`Icon at index ${index} is missing required "src" member`);
+      }
+
+      // Discourage combined purpose values like "any maskable" per PWA best practices
+      if (icon.purpose && typeof icon.purpose === 'string') {
+        const purposes = icon.purpose.toLowerCase().split(/\s+/).filter(Boolean);
+
+        const hasAny = purposes.includes('any');
+        const hasMaskable = purposes.includes('maskable');
+
+        if (hasAny && hasMaskable) {
+          errors.push(
+            `Icon at index ${index} uses discouraged purpose combination "any maskable"; prefer separate icons for each purpose`
+          );
+        }
       }
     });
   }

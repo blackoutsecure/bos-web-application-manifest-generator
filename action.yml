@@ -58,6 +58,7 @@ inputs:
   orientation:
     description: 'Default screen orientation: any, natural, landscape, portrait, portrait-primary, portrait-secondary, landscape-primary, landscape-secondary'
     required: false
+    default: 'any'
 
   # Colors
   theme_color:
@@ -80,22 +81,8 @@ inputs:
     required: false
 
   # Icons and visual elements
-  favicon:
-    description: 'Enable favicon mode with default favicon settings and manifest properties (default: true). Supports any favicon format.'
-    required: false
-    default: 'true'
-
-  favicon_dir:
-    description: 'Directory path prefix for default favicon icons (default: /). Example: /favicons/ would generate /favicons/android-chrome-192x192.png'
-    required: false
-    default: '/'
-
-  favicon_options:
-    description: 'JSON object to override default favicon manifest properties (name, short_name, icons, theme_color, background_color, display, etc.). Allows customization of any manifest property.'
-    required: false
-
   icons:
-    description: 'JSON array of icon objects with src, sizes, type, and purpose properties. Not required if favicons is enabled.'
+    description: 'JSON array of icon objects with src, sizes, type, and optional purpose (`any`, `maskable`, `monochrome`). Defaults use maskable.'
     required: false
 
   shortcuts:
@@ -128,15 +115,10 @@ inputs:
     required: false
     default: 'html htm xhtml php phtml'
 
-  favicon_validation:
-    description: 'Favicon file validation mode (only in favicon mode): fail (fail action if missing), warn (warn if missing), or none (skip validation) (default: warn)'
+  validate_manifest_assets:
+    description: 'Validate manifest assets (icon file existence). Always warns, never fails. (default: true)'
     required: false
-    default: 'warn'
-
-  icon_validation:
-    description: 'Icon file validation mode for standard icons: fail (fail action if missing), warn (warn if missing), or none (skip validation)'
-    required: false
-    default: 'warn'
+    default: 'true'
 
   # Output configuration
   public_dir:
