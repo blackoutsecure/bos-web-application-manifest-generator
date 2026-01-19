@@ -23,10 +23,10 @@ Generate W3C-compliant web manifest files for Progressive Web Apps with full cus
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
-    favicons: false
+    favicon: false
     name: 'My App'
     short_name: 'App'
     description: 'My Progressive Web App'
@@ -54,7 +54,7 @@ Use favicon mode for a quick setup with default favicon settings. This mode supp
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     favicon: true
     public_dir: 'dist'
@@ -93,7 +93,7 @@ Override specific defaults using `favicon_options`. You can customize any manife
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicon: true
@@ -143,7 +143,7 @@ When `favicon: true` (default, favicon mode):
 - **Background Color**: `#ffffff` (white)
 - **Display**: `standalone`
 - **Icons**: Android Chrome format icons with path prefix from `favicon_dir` (default: `/`) → `/android-chrome-192x192.png` and `/android-chrome-512x512.png`
-- **Favicon Validation**: Enabled (fails if favicon files missing)
+- **Favicon Validation**: Warn on missing files (set `favicon_validation: fail` to fail action, `none` to skip)
 - **Start URL**: `/`
 - **Scope**: `/`
 
@@ -174,7 +174,7 @@ If your favicon files are in a subdirectory, use `favicon_dir`:
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicon_dir: '/assets/'
@@ -236,7 +236,7 @@ When `favicon: true` (default), the action automatically validates that favicon 
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicon: true
@@ -247,7 +247,7 @@ When `favicon: true` (default), the action automatically validates that favicon 
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicon: true
@@ -264,7 +264,7 @@ When `favicon: false` (standard mode), the action validates custom icons:
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicon: false
@@ -293,10 +293,10 @@ By default, the generated manifest file is automatically uploaded to GitHub arti
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
-    favicons: false
+    favicon: false
     name: 'My App'
     # Artifacts enabled by default
     # upload_artifacts: true
@@ -309,10 +309,10 @@ Skip automatic artifact upload:
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
-    favicons: false
+    favicon: false
     name: 'My App'
     upload_artifacts: false
 ```
@@ -323,7 +323,7 @@ Customize artifact name and retention:
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicons: false
@@ -351,7 +351,7 @@ Disable with `inject_manifest_link: false` or specify custom file extensions:
 
 ```yaml
 - name: Generate Web Manifest
-  uses: blackoutsecure/bos-web-application-manifest-generator@v1
+  uses: blackoutsecure/bos-web-application-manifest-generator@v1.0.2
   with:
     public_dir: 'dist'
     favicons: false
@@ -461,7 +461,7 @@ npm run release 1.2.3
 - Builds `dist/` folder
 - Runs full test suite
 - Commits changes to git
-- Creates version tag (e.g., `v1.0.1`)
+- Creates version tag (e.g., `v1.0.2`)
 - Creates/updates moving tag (e.g., `v1`)
 - Creates/updates `latest` tag
 - Pushes everything to GitHub
@@ -478,7 +478,7 @@ npm run release 1.2.3
 
 Users can reference this action using:
 
-- `@v1.0.1` - Specific version (recommended for stability)
+- `@v1.0.2` - Specific version (recommended for stability)
 - `@v1` - Latest v1.x.x release (auto-updates)
 - `@latest` - Always the latest release (use with caution)
 

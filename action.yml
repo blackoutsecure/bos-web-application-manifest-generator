@@ -3,6 +3,9 @@
 # Copyright © 2025-2026 Blackout Secure
 # Licensed under Apache License 2.0
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# GitHub Marketplace Categories (selected during release UI):
+# Primary: Continuous integration
+# Secondary: Utilities
 
 name: 'Blackout Secure Web Application Manifest Generator'
 description: 'Generate W3C-compliant web application manifest files for Progressive Web Apps with full customization'
