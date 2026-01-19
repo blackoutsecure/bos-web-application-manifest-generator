@@ -25650,7 +25650,7 @@ module.exports = {
  * Copyright 2025 Blackout Secure
  * SPDX-License-Identifier: Apache-2.0
  *
- * Web Manifest Generator - Main Entry Point
+ * Web Application Manifest Generator - Main Entry Point
  * Generates site.webmanifest files according to W3C Web Application Manifest specification
  */
 
@@ -25660,6 +25660,7 @@ const path = __nccwpck_require__(6928);
 const { generateManifest, validateManifest, processManifest } = __nccwpck_require__(2860);
 const { processPageFiles } = __nccwpck_require__(8875);
 const { validateIcons } = __nccwpck_require__(3723);
+const { version, defaults } = __nccwpck_require__(6067);
 
 /**
  * Main action entry point
@@ -25667,11 +25668,13 @@ const { validateIcons } = __nccwpck_require__(3723);
 async function run() {
   try {
     core.info('━'.repeat(50));
-    core.info('🌐 Web Manifest Generator v1.0.0');
+    core.info(`🌐 Web Application Manifest Generator v${version}`);
     core.info('━'.repeat(50));
     core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutmode/bos-sitewebmanifest');
-    core.info('💬 Support: github.com/blackoutmode/bos-sitewebmanifest/issues');
+    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
+    core.info(
+      '💬 Support: github.com/blackoutsecure/bos-web-application-manifest-generator/issues'
+    );
     core.info('━'.repeat(50));
     core.info('');
 
@@ -25679,24 +25682,26 @@ async function run() {
     const name = core.getInput('name');
     const short_name = core.getInput('short_name');
     const description = core.getInput('description');
-    const start_url = core.getInput('start_url') || '/';
-    const scope = core.getInput('scope') || '/';
-    const display = core.getInput('display') || 'standalone';
+    const start_url = core.getInput('start_url') || defaults.startUrl;
+    const scope = core.getInput('scope') || defaults.scope;
+    const display = core.getInput('display') || defaults.display;
     const theme_color = core.getInput('theme_color');
     const background_color = core.getInput('background_color');
     const orientation = core.getInput('orientation');
     const lang = core.getInput('lang');
     const dir = core.getInput('dir');
     const id = core.getInput('id');
-    const icons_dir = core.getInput('icons_dir') || '/icons/';
-    const output_dir = core.getInput('output_dir') || 'public';
-    const filename = core.getInput('filename') || 'site.webmanifest';
+    const icons_dir = core.getInput('icons_dir') || defaults.iconsDir;
+    const public_dir = core.getInput('public_dir');
+    const filename = core.getInput('filename') || defaults.filename;
     const inject_manifest_link = core.getBooleanInput('inject_manifest_link') !== false;
     const crossorigin_credentials = core.getBooleanInput('crossorigin_credentials') === true;
-    const inject_manifest_link_exts = (core.getInput('inject_manifest_link_exts') || 'html htm')
+    const inject_manifest_link_exts = (
+      core.getInput('inject_manifest_link_exts') || defaults.injectManifestLinkExts.join(' ')
+    )
       .split(/\s+/)
       .filter(Boolean);
-    const icon_validation = core.getInput('icon_validation') || 'warn';
+    const icon_validation = core.getInput('icon_validation') || defaults.iconValidation;
     const favicons = core.getBooleanInput('favicons') === true;
     const faviconsOptionsInput = core.getInput('favicons_options');
 
@@ -25779,12 +25784,14 @@ async function run() {
     core.info(`   Icons Directory: ${icons_dir}`);
     core.info(`   Favicons Mode: ${favicons ? 'enabled' : 'disabled'}`);
     if (favicons && Object.keys(favicons_options).length > 0) {
-      core.info(`   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`);
+      core.info(
+        `   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`
+      );
     }
     core.info(`   Icons: ${icons.length} defined`);
     core.info(`   Shortcuts: ${shortcuts.length} defined`);
     core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);
-    core.info(`   Output Directory: ${output_dir}`);
+    core.info(`   Public Directory: ${public_dir}`);
     core.info(`   Output Filename: ${filename}`);
     core.info(`   Page Injection: ${inject_manifest_link ? 'enabled' : 'disabled'}`);
     if (inject_manifest_link) {
@@ -25833,11 +25840,11 @@ async function run() {
       }
     }
 
-    // Ensure output directory exists
-    const outputPath = path.resolve(output_dir);
+    // Ensure public directory exists
+    const outputPath = path.resolve(public_dir);
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
-      core.info(`📁 Created output directory: ${outputPath}`);
+      core.info(`📁 Created public directory: ${outputPath}`);
     }
 
     // Write manifest file
@@ -25899,7 +25906,7 @@ async function run() {
     core.info('✅ Web Manifest generation complete!');
     core.info('━'.repeat(50));
     core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutmode/bos-sitewebmanifest');
+    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
     core.info('━'.repeat(50));
   } catch (error) {
     core.setFailed(`❌ Action failed: ${error.message}`);
@@ -25998,58 +26005,45 @@ module.exports.validateIcons = validateIcons;
 /***/ }),
 
 /***/ 2860:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
  * Copyright 2025 Blackout Secure
  * SPDX-License-Identifier: Apache-2.0
  *
- * Web Manifest Generator
+ * Web Application Manifest Generator
  * Generates site.webmanifest files according to W3C Web Application Manifest specification
  * https://w3c.github.io/manifest/
  */
 
+const config = __nccwpck_require__(6067);
+
 /**
  * Validates and processes manifest configuration according to W3C spec
- * @param {Object} config - Manifest configuration object
+ * @param {Object} cfg - Manifest configuration object
  * @returns {Object} Processed manifest object
  */
-function processManifest(config = {}) {
+function processManifest(cfg = {}) {
   const manifest = {};
 
   // If favicons mode is enabled, apply defaults first
-  if (config.favicons) {
+  if (cfg.favicons) {
     // Apply default favicons manifest values
-    const defaults = {
-      name: '',
-      short_name: '',
-      icons: [
-        {
-          src: '/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-      theme_color: '#ffffff',
-      background_color: '#ffffff',
-      display: 'standalone',
-    };
+    const defaults = { ...config.faviconsDefaults };
 
     // Merge favicons_options overrides with defaults
-    if (config.favicons_options && typeof config.favicons_options === 'object') {
-      Object.assign(defaults, config.favicons_options);
+    if (cfg.favicons_options && typeof cfg.favicons_options === 'object') {
+      Object.assign(defaults, cfg.favicons_options);
     }
 
     // Apply defaults to config (but don't override explicitly set values)
     Object.keys(defaults).forEach((key) => {
-      if (config[key] === undefined || config[key] === '' || 
-          (Array.isArray(config[key]) && config[key].length === 0)) {
-        config[key] = defaults[key];
+      if (
+        cfg[key] === undefined ||
+        cfg[key] === '' ||
+        (Array.isArray(cfg[key]) && cfg[key].length === 0)
+      ) {
+        cfg[key] = defaults[key];
       }
     });
   }
@@ -26057,96 +26051,84 @@ function processManifest(config = {}) {
   // Required/recommended members according to W3C spec
 
   // name member - represents the name of the web application
-  if (config.name && typeof config.name === 'string') {
-    manifest.name = config.name.trim();
+  if (cfg.name && typeof cfg.name === 'string') {
+    manifest.name = cfg.name.trim();
   }
 
   // short_name member - short version of the name
-  if (config.short_name && typeof config.short_name === 'string') {
-    manifest.short_name = config.short_name.trim();
+  if (cfg.short_name && typeof cfg.short_name === 'string') {
+    manifest.short_name = cfg.short_name.trim();
   }
 
   // description member (from manifest-app-info extension)
-  if (config.description && typeof config.description === 'string') {
-    manifest.description = config.description.trim();
+  if (cfg.description && typeof cfg.description === 'string') {
+    manifest.description = cfg.description.trim();
   }
 
   // start_url member - URL that loads when the user launches the application
-  if (config.start_url && typeof config.start_url === 'string') {
-    manifest.start_url = config.start_url.trim();
+  if (cfg.start_url && typeof cfg.start_url === 'string') {
+    manifest.start_url = cfg.start_url.trim();
   } else {
-    manifest.start_url = '/'; // Default to root
+    manifest.start_url = config.defaults.startUrl; // Default to root
   }
 
   // id member - unique identifier for the application
-  if (config.id && typeof config.id === 'string') {
-    manifest.id = config.id.trim();
+  if (cfg.id && typeof cfg.id === 'string') {
+    manifest.id = cfg.id.trim();
   }
 
   // scope member - navigation scope of the web application
-  if (config.scope && typeof config.scope === 'string') {
-    manifest.scope = config.scope.trim();
+  if (cfg.scope && typeof cfg.scope === 'string') {
+    manifest.scope = cfg.scope.trim();
   } else {
-    manifest.scope = '/'; // Default scope
+    manifest.scope = config.defaults.scope; // Default scope
   }
 
   // display member - preferred display mode
-  const validDisplayModes = ['fullscreen', 'standalone', 'minimal-ui', 'browser'];
-  if (config.display && validDisplayModes.includes(config.display.toLowerCase())) {
-    manifest.display = config.display.toLowerCase();
+  if (cfg.display && config.validation.displayModes.includes(cfg.display.toLowerCase())) {
+    manifest.display = cfg.display.toLowerCase();
   } else {
-    manifest.display = 'standalone'; // Default display mode
+    manifest.display = config.defaults.display; // Default display mode
   }
 
   // orientation member - default screen orientation
-  const validOrientations = [
-    'any',
-    'natural',
-    'landscape',
-    'portrait',
-    'portrait-primary',
-    'portrait-secondary',
-    'landscape-primary',
-    'landscape-secondary',
-  ];
-  if (config.orientation && validOrientations.includes(config.orientation.toLowerCase())) {
-    manifest.orientation = config.orientation.toLowerCase();
+  if (cfg.orientation && config.validation.orientations.includes(cfg.orientation.toLowerCase())) {
+    manifest.orientation = cfg.orientation.toLowerCase();
   }
 
   // theme_color member - default theme color for the application
-  if (config.theme_color && typeof config.theme_color === 'string') {
-    manifest.theme_color = config.theme_color.trim();
+  if (cfg.theme_color && typeof cfg.theme_color === 'string') {
+    manifest.theme_color = cfg.theme_color.trim();
   }
 
   // background_color member - expected background color
-  if (config.background_color && typeof config.background_color === 'string') {
-    manifest.background_color = config.background_color.trim();
+  if (cfg.background_color && typeof cfg.background_color === 'string') {
+    manifest.background_color = cfg.background_color.trim();
   }
 
   // lang member - language for the manifest's values
-  if (config.lang && typeof config.lang === 'string') {
-    manifest.lang = config.lang.trim();
+  if (cfg.lang && typeof cfg.lang === 'string') {
+    manifest.lang = cfg.lang.trim();
   }
 
   // dir member - text direction
-  const validDirections = ['ltr', 'rtl', 'auto'];
-  if (config.dir && validDirections.includes(config.dir.toLowerCase())) {
-    manifest.dir = config.dir.toLowerCase();
+  if (cfg.dir && config.validation.textDirections.includes(cfg.dir.toLowerCase())) {
+    manifest.dir = cfg.dir.toLowerCase();
   }
 
   // icons member - array of image resources
-  if (Array.isArray(config.icons)) {
-    manifest.icons = processIcons(config.icons);
+  if (Array.isArray(cfg.icons)) {
+    manifest.icons = processIcons(cfg.icons);
   }
 
   // shortcuts member - array of shortcut items
-  if (Array.isArray(config.shortcuts)) {
-    manifest.shortcuts = processShortcuts(config.shortcuts);
+  if (Array.isArray(cfg.shortcuts)) {
+    manifest.shortcuts = processShortcuts(cfg.shortcuts);
   }
 
   // categories member (from manifest-app-info extension)
-  if (Array.isArray(config.categories)) {
-    manifest.categories = config.categories
+  if (Array.isArray(cfg.categories)) {
+    manifest.categories = cfg.categories
       .filter((cat) => typeof cat === 'string')
       .map((cat) => cat.trim());
   }
@@ -26178,12 +26160,11 @@ function processIcons(icons) {
       }
 
       // purpose member - space-separated list of purposes
-      const validPurposes = ['monochrome', 'maskable', 'any'];
       if (icon.purpose && typeof icon.purpose === 'string') {
         const purposes = icon.purpose
           .toLowerCase()
           .split(/\s+/)
-          .filter((p) => validPurposes.includes(p));
+          .filter((p) => config.validation.iconPurposes.includes(p));
         if (purposes.length > 0) {
           processed.purpose = purposes.join(' ');
         }
@@ -26492,6 +26473,95 @@ module.exports.findManifestLink = findManifestLink;
 module.exports.updateManifestLink = updateManifestLink;
 module.exports.injectManifestLink = injectManifestLink;
 module.exports.processPageFiles = processPageFiles;
+
+
+/***/ }),
+
+/***/ 6067:
+/***/ ((module) => {
+
+/**
+ * Copyright 2025-2026 Blackout Secure
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Project Configuration
+ * Central source of truth for project metadata, version information, and constants
+ */
+
+module.exports = {
+  // Project metadata
+  name: 'Blackout Secure Web Application Manifest Generator',
+  shortName: 'bos-web-application-manifest-generator',
+  version: '1.0.1',
+  description:
+    'Generate W3C-compliant web manifest files for Progressive Web Apps with full customization',
+  author: 'Blackout Secure',
+  license: 'Apache-2.0',
+  repository: 'https://github.com/blackoutsecure/bos-web-application-manifest-generator',
+  homepage: 'https://github.com/blackoutsecure/bos-web-application-manifest-generator#readme',
+  issues: 'https://github.com/blackoutsecure/bos-web-application-manifest-generator/issues',
+  website: 'https://blackoutsecure.app',
+  copyright: '© 2025-2026 Blackout Secure',
+
+  // Default action input values
+  defaults: {
+    startUrl: '/',
+    scope: '/',
+    display: 'standalone',
+    iconsDir: '/icons/',
+    filename: 'site.webmanifest',
+    injectManifestLink: true,
+    crossoriginCredentials: false,
+    injectManifestLinkExts: ['html', 'htm'],
+    iconValidation: 'warn',
+    favicons: false,
+  },
+
+  // W3C spec validation constants
+  validation: {
+    displayModes: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
+    orientations: [
+      'any',
+      'natural',
+      'landscape',
+      'portrait',
+      'portrait-primary',
+      'portrait-secondary',
+      'landscape-primary',
+      'landscape-secondary',
+    ],
+    textDirections: ['ltr', 'rtl', 'auto'],
+    iconPurposes: ['monochrome', 'maskable', 'any'],
+  },
+
+  // Default favicons manifest
+  faviconsDefaults: {
+    name: '',
+    short_name: '',
+    icons: [
+      {
+        src: '/android-chrome-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        src: '/android-chrome-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+    theme_color: '#ffffff',
+    background_color: '#ffffff',
+    display: 'standalone',
+  },
+
+  // Icon validation modes
+  iconValidationModes: {
+    FAIL: 'fail',
+    WARN: 'warn',
+    NONE: 'none',
+  },
+};
 
 
 /***/ }),

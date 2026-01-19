@@ -2,7 +2,7 @@
  * Copyright 2025 Blackout Secure
  * SPDX-License-Identifier: Apache-2.0
  *
- * Tests for Web Manifest Generator
+ * Tests for Web Application Manifest Generator
  */
 
 const { describe, it } = require('mocha');
@@ -15,7 +15,7 @@ const {
   validateManifest,
 } = require('../src/lib/manifest-generator');
 
-describe('Web Manifest Generator', () => {
+describe('Web Application Manifest Generator', () => {
   describe('processManifest', () => {
     it('should generate a minimal valid manifest', () => {
       const config = {

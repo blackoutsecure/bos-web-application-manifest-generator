@@ -1,11 +1,11 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Blackout Secure Web Manifest Generator
+# Blackout Secure Web Application Manifest Generator
 # Copyright © 2025-2026 Blackout Secure
 # Licensed under Apache License 2.0
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-name: 'Blackout Secure Web Manifest Generator'
-description: 'Generate W3C-compliant web manifest files for Progressive Web Apps with full customization'
+name: 'Blackout Secure Web Application Manifest Generator'
+description: 'Generate W3C-compliant web application manifest files for Progressive Web Apps with full customization'
 author: 'Blackout Secure'
 branding:
   icon: 'file-text'
@@ -121,13 +121,12 @@ inputs:
     default: 'warn'
 
   # Output configuration
-  output_dir:
-    description: 'Directory to write the manifest file (default: public)'
-    required: false
-    default: 'public'
+  public_dir:
+    description: 'Public directory where the manifest file will be written (e.g., public, dist, build)'
+    required: true
 
   filename:
-    description: 'Output filename (default: site.webmanifest)'
+    description: 'Output manifest filename (default: site.webmanifest)'
     required: false
     default: 'site.webmanifest'
 

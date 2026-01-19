@@ -45,9 +45,87 @@ npm run coverage
 
 ## Release Process
 
-Releases are performed via the `Release` workflow:
+Releases are automated using the built-in release scripts. Only maintainers should perform releases.
 
-- Provide a semantic version (e.g. `v1.2.0`).
+### Prerequisites
+
+- Clean git working directory (all changes committed)
+- All tests passing
+- On `main` branch
+
+### Release Steps
+
+1. **Determine version bump type:**
+   - `patch` - Bug fixes, minor changes (1.0.0 → 1.0.1)
+   - `minor` - New features, backwards compatible (1.0.0 → 1.1.0)
+   - `major` - Breaking changes (1.0.0 → 2.0.0)
+
+2. **Run release command:**
+
+   ```bash
+   npm run release patch   # or minor/major
+   # OR specify exact version
+   npm run release 1.2.3
+   ```
+
+3. **Automated process:**
+   - Updates version in `package.json`, `src/lib/project-config.js`, `src/index.js`
+   - Builds `dist/` folder
+   - Runs full test suite
+   - Commits changes
+   - Creates version tag (e.g., `v1.0.1`)
+   - Creates/updates moving tag (e.g., `v1`)
+   - Creates/updates `latest` tag
+   - Pushes to GitHub
+
+4. **Publish to Marketplace:**
+   - Go to [GitHub Releases](https://github.com/blackoutsecure/bos-web-application-manifest-generator/releases)
+   - Draft a new release for the created tag
+   - Add release notes (features, fixes, breaking changes)
+   - Check "Publish this Action to the GitHub Marketplace"
+   - Select category: "Deployment" or "Continuous Integration"
+   - Publish
+
+### Version Management
+
+Check current version:
+
+```bash
+npm run version:get
+```
+
+Manual version updates (without release):
+
+```bash
+npm run version:patch   # Increment patch
+npm run version:minor   # Increment minor
+npm run version:major   # Increment major
+```
+
+### What Gets Updated
+
+The version is automatically synchronized across:
+
+- `package.json` and `package-lock.json`
+- `src/lib/project-config.js`
+- `src/index.js` (version display)
+
+### Tags Created
+
+Each release creates three types of tags:
+
+- **Specific version** (`v1.2.3`) - Immutable, recommended for users
+- **Major version** (`v1`) - Points to latest v1.x.x, auto-updates
+- **Latest** (`latest`) - Points to newest release overall
+
+Users can reference the action with:
+
+```yaml
+uses: blackoutsecure/bos-web-application-manifest-generator@v1.2.3  # Specific
+uses: blackoutsecure/bos-web-application-manifest-generator@v1      # Latest v1.x
+uses: blackoutsecure/bos-web-application-manifest-generator@latest  # Latest overall
+```
+
 - Workflow builds, commits dist (if changed), creates annotated tag, updates moving major tag.
 - GitHub Release generated with notes.
 

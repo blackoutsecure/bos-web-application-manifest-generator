@@ -2,52 +2,39 @@
  * Copyright 2025 Blackout Secure
  * SPDX-License-Identifier: Apache-2.0
  *
- * Web Manifest Generator
+ * Web Application Manifest Generator
  * Generates site.webmanifest files according to W3C Web Application Manifest specification
  * https://w3c.github.io/manifest/
  */
 
+const config = require('./project-config');
+
 /**
  * Validates and processes manifest configuration according to W3C spec
- * @param {Object} config - Manifest configuration object
+ * @param {Object} cfg - Manifest configuration object
  * @returns {Object} Processed manifest object
  */
-function processManifest(config = {}) {
+function processManifest(cfg = {}) {
   const manifest = {};
 
   // If favicons mode is enabled, apply defaults first
-  if (config.favicons) {
+  if (cfg.favicons) {
     // Apply default favicons manifest values
-    const defaults = {
-      name: '',
-      short_name: '',
-      icons: [
-        {
-          src: '/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-      theme_color: '#ffffff',
-      background_color: '#ffffff',
-      display: 'standalone',
-    };
+    const defaults = { ...config.faviconsDefaults };
 
     // Merge favicons_options overrides with defaults
-    if (config.favicons_options && typeof config.favicons_options === 'object') {
-      Object.assign(defaults, config.favicons_options);
+    if (cfg.favicons_options && typeof cfg.favicons_options === 'object') {
+      Object.assign(defaults, cfg.favicons_options);
     }
 
     // Apply defaults to config (but don't override explicitly set values)
     Object.keys(defaults).forEach((key) => {
-      if (config[key] === undefined || config[key] === '' || 
-          (Array.isArray(config[key]) && config[key].length === 0)) {
-        config[key] = defaults[key];
+      if (
+        cfg[key] === undefined ||
+        cfg[key] === '' ||
+        (Array.isArray(cfg[key]) && cfg[key].length === 0)
+      ) {
+        cfg[key] = defaults[key];
       }
     });
   }
@@ -55,96 +42,84 @@ function processManifest(config = {}) {
   // Required/recommended members according to W3C spec
 
   // name member - represents the name of the web application
-  if (config.name && typeof config.name === 'string') {
-    manifest.name = config.name.trim();
+  if (cfg.name && typeof cfg.name === 'string') {
+    manifest.name = cfg.name.trim();
   }
 
   // short_name member - short version of the name
-  if (config.short_name && typeof config.short_name === 'string') {
-    manifest.short_name = config.short_name.trim();
+  if (cfg.short_name && typeof cfg.short_name === 'string') {
+    manifest.short_name = cfg.short_name.trim();
   }
 
   // description member (from manifest-app-info extension)
-  if (config.description && typeof config.description === 'string') {
-    manifest.description = config.description.trim();
+  if (cfg.description && typeof cfg.description === 'string') {
+    manifest.description = cfg.description.trim();
   }
 
   // start_url member - URL that loads when the user launches the application
-  if (config.start_url && typeof config.start_url === 'string') {
-    manifest.start_url = config.start_url.trim();
+  if (cfg.start_url && typeof cfg.start_url === 'string') {
+    manifest.start_url = cfg.start_url.trim();
   } else {
-    manifest.start_url = '/'; // Default to root
+    manifest.start_url = config.defaults.startUrl; // Default to root
   }
 
   // id member - unique identifier for the application
-  if (config.id && typeof config.id === 'string') {
-    manifest.id = config.id.trim();
+  if (cfg.id && typeof cfg.id === 'string') {
+    manifest.id = cfg.id.trim();
   }
 
   // scope member - navigation scope of the web application
-  if (config.scope && typeof config.scope === 'string') {
-    manifest.scope = config.scope.trim();
+  if (cfg.scope && typeof cfg.scope === 'string') {
+    manifest.scope = cfg.scope.trim();
   } else {
-    manifest.scope = '/'; // Default scope
+    manifest.scope = config.defaults.scope; // Default scope
   }
 
   // display member - preferred display mode
-  const validDisplayModes = ['fullscreen', 'standalone', 'minimal-ui', 'browser'];
-  if (config.display && validDisplayModes.includes(config.display.toLowerCase())) {
-    manifest.display = config.display.toLowerCase();
+  if (cfg.display && config.validation.displayModes.includes(cfg.display.toLowerCase())) {
+    manifest.display = cfg.display.toLowerCase();
   } else {
-    manifest.display = 'standalone'; // Default display mode
+    manifest.display = config.defaults.display; // Default display mode
   }
 
   // orientation member - default screen orientation
-  const validOrientations = [
-    'any',
-    'natural',
-    'landscape',
-    'portrait',
-    'portrait-primary',
-    'portrait-secondary',
-    'landscape-primary',
-    'landscape-secondary',
-  ];
-  if (config.orientation && validOrientations.includes(config.orientation.toLowerCase())) {
-    manifest.orientation = config.orientation.toLowerCase();
+  if (cfg.orientation && config.validation.orientations.includes(cfg.orientation.toLowerCase())) {
+    manifest.orientation = cfg.orientation.toLowerCase();
   }
 
   // theme_color member - default theme color for the application
-  if (config.theme_color && typeof config.theme_color === 'string') {
-    manifest.theme_color = config.theme_color.trim();
+  if (cfg.theme_color && typeof cfg.theme_color === 'string') {
+    manifest.theme_color = cfg.theme_color.trim();
   }
 
   // background_color member - expected background color
-  if (config.background_color && typeof config.background_color === 'string') {
-    manifest.background_color = config.background_color.trim();
+  if (cfg.background_color && typeof cfg.background_color === 'string') {
+    manifest.background_color = cfg.background_color.trim();
   }
 
   // lang member - language for the manifest's values
-  if (config.lang && typeof config.lang === 'string') {
-    manifest.lang = config.lang.trim();
+  if (cfg.lang && typeof cfg.lang === 'string') {
+    manifest.lang = cfg.lang.trim();
   }
 
   // dir member - text direction
-  const validDirections = ['ltr', 'rtl', 'auto'];
-  if (config.dir && validDirections.includes(config.dir.toLowerCase())) {
-    manifest.dir = config.dir.toLowerCase();
+  if (cfg.dir && config.validation.textDirections.includes(cfg.dir.toLowerCase())) {
+    manifest.dir = cfg.dir.toLowerCase();
   }
 
   // icons member - array of image resources
-  if (Array.isArray(config.icons)) {
-    manifest.icons = processIcons(config.icons);
+  if (Array.isArray(cfg.icons)) {
+    manifest.icons = processIcons(cfg.icons);
   }
 
   // shortcuts member - array of shortcut items
-  if (Array.isArray(config.shortcuts)) {
-    manifest.shortcuts = processShortcuts(config.shortcuts);
+  if (Array.isArray(cfg.shortcuts)) {
+    manifest.shortcuts = processShortcuts(cfg.shortcuts);
   }
 
   // categories member (from manifest-app-info extension)
-  if (Array.isArray(config.categories)) {
-    manifest.categories = config.categories
+  if (Array.isArray(cfg.categories)) {
+    manifest.categories = cfg.categories
       .filter((cat) => typeof cat === 'string')
       .map((cat) => cat.trim());
   }
@@ -176,12 +151,11 @@ function processIcons(icons) {
       }
 
       // purpose member - space-separated list of purposes
-      const validPurposes = ['monochrome', 'maskable', 'any'];
       if (icon.purpose && typeof icon.purpose === 'string') {
         const purposes = icon.purpose
           .toLowerCase()
           .split(/\s+/)
-          .filter((p) => validPurposes.includes(p));
+          .filter((p) => config.validation.iconPurposes.includes(p));
         if (purposes.length > 0) {
           processed.purpose = purposes.join(' ');
         }

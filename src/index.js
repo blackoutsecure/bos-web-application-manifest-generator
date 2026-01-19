@@ -2,7 +2,7 @@
  * Copyright 2025 Blackout Secure
  * SPDX-License-Identifier: Apache-2.0
  *
- * Web Manifest Generator - Main Entry Point
+ * Web Application Manifest Generator - Main Entry Point
  * Generates site.webmanifest files according to W3C Web Application Manifest specification
  */
 
@@ -12,6 +12,7 @@ const path = require('path');
 const { generateManifest, validateManifest, processManifest } = require('./lib/manifest-generator');
 const { processPageFiles } = require('./lib/page-injector');
 const { validateIcons } = require('./lib/icon-validator');
+const { version, defaults } = require('./lib/project-config');
 
 /**
  * Main action entry point
@@ -19,11 +20,13 @@ const { validateIcons } = require('./lib/icon-validator');
 async function run() {
   try {
     core.info('━'.repeat(50));
-    core.info('🌐 Web Manifest Generator v1.0.0');
+    core.info(`🌐 Web Application Manifest Generator v${version}`);
     core.info('━'.repeat(50));
     core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutmode/bos-sitewebmanifest');
-    core.info('💬 Support: github.com/blackoutmode/bos-sitewebmanifest/issues');
+    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
+    core.info(
+      '💬 Support: github.com/blackoutsecure/bos-web-application-manifest-generator/issues'
+    );
     core.info('━'.repeat(50));
     core.info('');
 
@@ -31,24 +34,26 @@ async function run() {
     const name = core.getInput('name');
     const short_name = core.getInput('short_name');
     const description = core.getInput('description');
-    const start_url = core.getInput('start_url') || '/';
-    const scope = core.getInput('scope') || '/';
-    const display = core.getInput('display') || 'standalone';
+    const start_url = core.getInput('start_url') || defaults.startUrl;
+    const scope = core.getInput('scope') || defaults.scope;
+    const display = core.getInput('display') || defaults.display;
     const theme_color = core.getInput('theme_color');
     const background_color = core.getInput('background_color');
     const orientation = core.getInput('orientation');
     const lang = core.getInput('lang');
     const dir = core.getInput('dir');
     const id = core.getInput('id');
-    const icons_dir = core.getInput('icons_dir') || '/icons/';
-    const output_dir = core.getInput('output_dir') || 'public';
-    const filename = core.getInput('filename') || 'site.webmanifest';
+    const icons_dir = core.getInput('icons_dir') || defaults.iconsDir;
+    const public_dir = core.getInput('public_dir');
+    const filename = core.getInput('filename') || defaults.filename;
     const inject_manifest_link = core.getBooleanInput('inject_manifest_link') !== false;
     const crossorigin_credentials = core.getBooleanInput('crossorigin_credentials') === true;
-    const inject_manifest_link_exts = (core.getInput('inject_manifest_link_exts') || 'html htm')
+    const inject_manifest_link_exts = (
+      core.getInput('inject_manifest_link_exts') || defaults.injectManifestLinkExts.join(' ')
+    )
       .split(/\s+/)
       .filter(Boolean);
-    const icon_validation = core.getInput('icon_validation') || 'warn';
+    const icon_validation = core.getInput('icon_validation') || defaults.iconValidation;
     const favicons = core.getBooleanInput('favicons') === true;
     const faviconsOptionsInput = core.getInput('favicons_options');
 
@@ -131,12 +136,14 @@ async function run() {
     core.info(`   Icons Directory: ${icons_dir}`);
     core.info(`   Favicons Mode: ${favicons ? 'enabled' : 'disabled'}`);
     if (favicons && Object.keys(favicons_options).length > 0) {
-      core.info(`   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`);
+      core.info(
+        `   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`
+      );
     }
     core.info(`   Icons: ${icons.length} defined`);
     core.info(`   Shortcuts: ${shortcuts.length} defined`);
     core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);
-    core.info(`   Output Directory: ${output_dir}`);
+    core.info(`   Public Directory: ${public_dir}`);
     core.info(`   Output Filename: ${filename}`);
     core.info(`   Page Injection: ${inject_manifest_link ? 'enabled' : 'disabled'}`);
     if (inject_manifest_link) {
@@ -185,11 +192,11 @@ async function run() {
       }
     }
 
-    // Ensure output directory exists
-    const outputPath = path.resolve(output_dir);
+    // Ensure public directory exists
+    const outputPath = path.resolve(public_dir);
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
-      core.info(`📁 Created output directory: ${outputPath}`);
+      core.info(`📁 Created public directory: ${outputPath}`);
     }
 
     // Write manifest file
@@ -251,7 +258,7 @@ async function run() {
     core.info('✅ Web Manifest generation complete!');
     core.info('━'.repeat(50));
     core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutmode/bos-sitewebmanifest');
+    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
     core.info('━'.repeat(50));
   } catch (error) {
     core.setFailed(`❌ Action failed: ${error.message}`);
