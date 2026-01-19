@@ -196,7 +196,9 @@ async function run() {
 
     // Validate icon files if validation is enabled
     if (icon_validation !== 'none' && icons.length > 0) {
-      const iconValidation = validateIcons(icons, process.cwd());
+      // Resolve public_dir to get absolute path for validation
+      const baseDir = path.resolve(public_dir);
+      const iconValidation = validateIcons(icons, baseDir);
 
       if (iconValidation.missing.length > 0) {
         const message = `Found ${iconValidation.missing.length} missing icon file(s):`;

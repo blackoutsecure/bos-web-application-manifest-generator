@@ -42,13 +42,19 @@ function processManifest(cfg = {}) {
   // Required/recommended members according to W3C spec
 
   // name member - represents the name of the web application
-  if (cfg.name && typeof cfg.name === 'string') {
+  // Always include name field (even if empty) for consistency
+  if (cfg.name !== undefined && typeof cfg.name === 'string') {
     manifest.name = cfg.name.trim();
+  } else {
+    manifest.name = '';
   }
 
   // short_name member - short version of the name
-  if (cfg.short_name && typeof cfg.short_name === 'string') {
+  // Always include short_name field (even if empty) for consistency
+  if (cfg.short_name !== undefined && typeof cfg.short_name === 'string') {
     manifest.short_name = cfg.short_name.trim();
+  } else {
+    manifest.short_name = '';
   }
 
   // description member (from manifest-app-info extension)
