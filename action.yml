@@ -77,11 +77,17 @@ inputs:
     required: false
 
   # Icons and visual elements
-  favicons:
-    description: 'Enable favicons mode with default favicon settings and manifest properties. Supports any favicon format.'
-    required: true
+  favicon:
+    description: 'Enable favicon mode with default favicon settings and manifest properties (default: true). Supports any favicon format.'
+    required: false
+    default: 'true'
 
-  favicons_options:
+  favicon_dir:
+    description: 'Directory path prefix for default favicon icons (default: /). Example: /favicons/ would generate /favicons/android-chrome-192x192.png'
+    required: false
+    default: '/'
+
+  favicon_options:
     description: 'JSON object to override default favicon manifest properties (name, short_name, icons, theme_color, background_color, display, etc.). Allows customization of any manifest property.'
     required: false
 
@@ -119,8 +125,13 @@ inputs:
     required: false
     default: 'html htm xhtml php phtml'
 
+  favicon_validation:
+    description: 'Favicon file validation mode (only in favicon mode): fail (fail action if missing), warn (warn if missing), or none (skip validation) (default: warn)'
+    required: false
+    default: 'warn'
+
   icon_validation:
-    description: 'Icon file validation mode: fail (fail action if missing), warn (warn if missing), or none (skip validation)'
+    description: 'Icon file validation mode for standard icons: fail (fail action if missing), warn (warn if missing), or none (skip validation)'
     required: false
     default: 'warn'
 

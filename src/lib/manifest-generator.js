@@ -17,14 +17,14 @@ const config = require('./project-config');
 function processManifest(cfg = {}) {
   const manifest = {};
 
-  // If favicons mode is enabled, apply defaults first
-  if (cfg.favicons) {
-    // Apply default favicons manifest values
-    const defaults = { ...config.faviconsDefaults };
+  // If favicon mode is enabled, apply defaults first
+  if (cfg.favicon) {
+    // Apply default favicon manifest values
+    const defaults = { ...config.faviconDefaults };
 
-    // Merge favicons_options overrides with defaults
-    if (cfg.favicons_options && typeof cfg.favicons_options === 'object') {
-      Object.assign(defaults, cfg.favicons_options);
+    // Merge favicon_options overrides with defaults
+    if (cfg.favicon_options && typeof cfg.favicon_options === 'object') {
+      Object.assign(defaults, cfg.favicon_options);
     }
 
     // Apply defaults to config (but don't override explicitly set values)

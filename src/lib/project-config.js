@@ -48,7 +48,9 @@ module.exports = {
     crossoriginCredentials: false,
     injectManifestLinkExts: ['html', 'htm'],
     iconValidation: 'warn',
-    favicons: false,
+    favicon: true,
+    faviconDir: '/',
+    faviconValidation: 'warn',
   },
 
   // W3C spec validation constants
@@ -68,8 +70,8 @@ module.exports = {
     iconPurposes: ['monochrome', 'maskable', 'any'],
   },
 
-  // Default favicons manifest
-  faviconsDefaults: {
+  // Default favicon manifest
+  faviconDefaults: {
     name: '',
     short_name: '',
     icons: [

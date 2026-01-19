@@ -342,7 +342,7 @@ describe('Web Application Manifest Generator', () => {
       const config = {
         name: 'Test App',
         short_name: 'App',
-        favicons: true,
+        favicon: true,
       };
 
       const manifest = processManifest(config);
@@ -362,8 +362,8 @@ describe('Web Application Manifest Generator', () => {
       const config = {
         name: 'Test App',
         short_name: 'App',
-        favicons: true,
-        favicons_options: {
+        favicon: true,
+        favicon_options: {
           theme_color: '#ff5722',
           background_color: '#212121',
           display: 'fullscreen',
@@ -391,8 +391,8 @@ describe('Web Application Manifest Generator', () => {
       const config = {
         name: 'Test App',
         short_name: 'App',
-        favicons: true,
-        favicons_options: {
+        favicon: true,
+        favicon_options: {
           icons: customIcons,
         },
       };
@@ -407,7 +407,7 @@ describe('Web Application Manifest Generator', () => {
       const config = {
         name: 'Test App',
         short_name: 'App',
-        favicons: false,
+        favicon: false,
       };
 
       const manifest = processManifest(config);
@@ -424,7 +424,7 @@ describe('Web Application Manifest Generator', () => {
         name: 'Test App',
         short_name: 'App',
         theme_color: '#4285f4',
-        favicons: true,
+        favicon: true,
       };
 
       const manifest = processManifest(config);
