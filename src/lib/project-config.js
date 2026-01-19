@@ -10,7 +10,7 @@ module.exports = {
   // Project metadata
   name: 'Blackout Secure Web Application Manifest Generator',
   shortName: 'bos-web-application-manifest-generator',
-  version: '1.0.1',
+  version: '1.0.2',
   description:
     'Generate W3C-compliant web manifest files for Progressive Web Apps with full customization',
   author: 'Blackout Secure',
