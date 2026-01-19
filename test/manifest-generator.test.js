@@ -336,4 +336,103 @@ describe('Web Manifest Generator', () => {
       assert(result.errors.some((e) => e.includes('Shortcut at index 1')));
     });
   });
+
+  describe('favicons mode', () => {
+    it('should apply default favicons settings when favicons is true', () => {
+      const config = {
+        name: 'Test App',
+        short_name: 'App',
+        favicons: true,
+      };
+
+      const manifest = processManifest(config);
+
+      assert.strictEqual(manifest.theme_color, '#ffffff');
+      assert.strictEqual(manifest.background_color, '#ffffff');
+      assert.strictEqual(manifest.display, 'standalone');
+      assert(Array.isArray(manifest.icons));
+      assert.strictEqual(manifest.icons.length, 2);
+      assert.strictEqual(manifest.icons[0].src, '/android-chrome-192x192.png');
+      assert.strictEqual(manifest.icons[0].sizes, '192x192');
+      assert.strictEqual(manifest.icons[1].src, '/android-chrome-512x512.png');
+      assert.strictEqual(manifest.icons[1].sizes, '512x512');
+    });
+
+    it('should override defaults with favicons_options', () => {
+      const config = {
+        name: 'Test App',
+        short_name: 'App',
+        favicons: true,
+        favicons_options: {
+          theme_color: '#ff5722',
+          background_color: '#212121',
+          display: 'fullscreen',
+        },
+      };
+
+      const manifest = processManifest(config);
+
+      assert.strictEqual(manifest.theme_color, '#ff5722');
+      assert.strictEqual(manifest.background_color, '#212121');
+      assert.strictEqual(manifest.display, 'fullscreen');
+      // Should still have default icons
+      assert.strictEqual(manifest.icons.length, 2);
+    });
+
+    it('should allow custom icons via favicons_options', () => {
+      const customIcons = [
+        {
+          src: '/custom-192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+      ];
+
+      const config = {
+        name: 'Test App',
+        short_name: 'App',
+        favicons: true,
+        favicons_options: {
+          icons: customIcons,
+        },
+      };
+
+      const manifest = processManifest(config);
+
+      assert.strictEqual(manifest.icons.length, 1);
+      assert.strictEqual(manifest.icons[0].src, '/custom-192.png');
+    });
+
+    it('should not apply favicons defaults when favicons is false', () => {
+      const config = {
+        name: 'Test App',
+        short_name: 'App',
+        favicons: false,
+      };
+
+      const manifest = processManifest(config);
+
+      // Should not have default theme/background colors
+      assert.strictEqual(manifest.theme_color, undefined);
+      assert.strictEqual(manifest.background_color, undefined);
+      // Should not have default icons
+      assert.strictEqual(manifest.icons, undefined);
+    });
+
+    it('should prefer explicitly set values over favicons defaults', () => {
+      const config = {
+        name: 'Test App',
+        short_name: 'App',
+        theme_color: '#4285f4',
+        favicons: true,
+      };
+
+      const manifest = processManifest(config);
+
+      // Explicitly set value should be preserved
+      assert.strictEqual(manifest.theme_color, '#4285f4');
+      // But favicons defaults should still apply for other fields
+      assert.strictEqual(manifest.background_color, '#ffffff');
+    });
+  });
 });

@@ -15,6 +15,43 @@
 function processManifest(config = {}) {
   const manifest = {};
 
+  // If favicons mode is enabled, apply defaults first
+  if (config.favicons) {
+    // Apply default favicons manifest values
+    const defaults = {
+      name: '',
+      short_name: '',
+      icons: [
+        {
+          src: '/android-chrome-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: '/android-chrome-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+      ],
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
+      display: 'standalone',
+    };
+
+    // Merge favicons_options overrides with defaults
+    if (config.favicons_options && typeof config.favicons_options === 'object') {
+      Object.assign(defaults, config.favicons_options);
+    }
+
+    // Apply defaults to config (but don't override explicitly set values)
+    Object.keys(defaults).forEach((key) => {
+      if (config[key] === undefined || config[key] === '' || 
+          (Array.isArray(config[key]) && config[key].length === 0)) {
+        config[key] = defaults[key];
+      }
+    });
+  }
+
   // Required/recommended members according to W3C spec
 
   // name member - represents the name of the web application

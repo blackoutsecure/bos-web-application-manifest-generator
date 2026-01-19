@@ -25697,6 +25697,18 @@ async function run() {
       .split(/\s+/)
       .filter(Boolean);
     const icon_validation = core.getInput('icon_validation') || 'warn';
+    const favicons = core.getBooleanInput('favicons') === true;
+    const faviconsOptionsInput = core.getInput('favicons_options');
+
+    // Parse favicons_options from JSON input if provided
+    let favicons_options = {};
+    if (faviconsOptionsInput) {
+      try {
+        favicons_options = JSON.parse(faviconsOptionsInput);
+      } catch (e) {
+        core.warning(`Failed to parse favicons_options JSON: ${e.message}`);
+      }
+    }
 
     // Parse icons from JSON input
     let icons = [];
@@ -25747,6 +25759,8 @@ async function run() {
       icons,
       shortcuts,
       categories,
+      favicons,
+      favicons_options,
     };
 
     core.info('📋 Configuration:');
@@ -25763,6 +25777,10 @@ async function run() {
     core.info(`   Text Direction: ${dir || '(not set)'}`);
     core.info(`   App ID: ${id || '(not set)'}`);
     core.info(`   Icons Directory: ${icons_dir}`);
+    core.info(`   Favicons Mode: ${favicons ? 'enabled' : 'disabled'}`);
+    if (favicons && Object.keys(favicons_options).length > 0) {
+      core.info(`   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`);
+    }
     core.info(`   Icons: ${icons.length} defined`);
     core.info(`   Shortcuts: ${shortcuts.length} defined`);
     core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);
@@ -25998,6 +26016,43 @@ module.exports.validateIcons = validateIcons;
  */
 function processManifest(config = {}) {
   const manifest = {};
+
+  // If favicons mode is enabled, apply defaults first
+  if (config.favicons) {
+    // Apply default favicons manifest values
+    const defaults = {
+      name: '',
+      short_name: '',
+      icons: [
+        {
+          src: '/android-chrome-192x192.png',
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: '/android-chrome-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+        },
+      ],
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
+      display: 'standalone',
+    };
+
+    // Merge favicons_options overrides with defaults
+    if (config.favicons_options && typeof config.favicons_options === 'object') {
+      Object.assign(defaults, config.favicons_options);
+    }
+
+    // Apply defaults to config (but don't override explicitly set values)
+    Object.keys(defaults).forEach((key) => {
+      if (config[key] === undefined || config[key] === '' || 
+          (Array.isArray(config[key]) && config[key].length === 0)) {
+        config[key] = defaults[key];
+      }
+    });
+  }
 
   // Required/recommended members according to W3C spec
 

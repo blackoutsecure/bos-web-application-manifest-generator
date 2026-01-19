@@ -49,6 +49,18 @@ async function run() {
       .split(/\s+/)
       .filter(Boolean);
     const icon_validation = core.getInput('icon_validation') || 'warn';
+    const favicons = core.getBooleanInput('favicons') === true;
+    const faviconsOptionsInput = core.getInput('favicons_options');
+
+    // Parse favicons_options from JSON input if provided
+    let favicons_options = {};
+    if (faviconsOptionsInput) {
+      try {
+        favicons_options = JSON.parse(faviconsOptionsInput);
+      } catch (e) {
+        core.warning(`Failed to parse favicons_options JSON: ${e.message}`);
+      }
+    }
 
     // Parse icons from JSON input
     let icons = [];
@@ -99,6 +111,8 @@ async function run() {
       icons,
       shortcuts,
       categories,
+      favicons,
+      favicons_options,
     };
 
     core.info('📋 Configuration:');
@@ -115,6 +129,10 @@ async function run() {
     core.info(`   Text Direction: ${dir || '(not set)'}`);
     core.info(`   App ID: ${id || '(not set)'}`);
     core.info(`   Icons Directory: ${icons_dir}`);
+    core.info(`   Favicons Mode: ${favicons ? 'enabled' : 'disabled'}`);
+    if (favicons && Object.keys(favicons_options).length > 0) {
+      core.info(`   Favicons Options: ${Object.keys(favicons_options).length} override(s) specified`);
+    }
     core.info(`   Icons: ${icons.length} defined`);
     core.info(`   Shortcuts: ${shortcuts.length} defined`);
     core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);

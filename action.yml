@@ -16,14 +16,14 @@ runs:
   main: 'dist/index.js'
 
 inputs:
-  # Required manifest members
+  # Manifest members
   name:
     description: 'Application name (displayed to users)'
-    required: true
+    required: false
 
   short_name:
     description: 'Short application name (for limited space)'
-    required: true
+    required: false
 
   description:
     description: 'Description of the web application'
@@ -31,8 +31,9 @@ inputs:
 
   # URL members
   start_url:
-    description: 'URL to load when launching the app'
-    required: true
+    description: 'URL to load when launching the app (default: /)'
+    required: false
+    default: '/'
 
   scope:
     description: 'Navigation scope of the app (default: /)'
@@ -72,9 +73,17 @@ inputs:
     required: false
 
   # Icons and visual elements
-  icons:
-    description: 'JSON array of icon objects with src, sizes, type, and purpose properties'
+  favicons:
+    description: 'Enable favicons mode with default favicon settings and manifest properties. Supports any favicon format.'
     required: true
+
+  favicons_options:
+    description: 'JSON object to override default favicon manifest properties (name, short_name, icons, theme_color, background_color, display, etc.). Allows customization of any manifest property.'
+    required: false
+
+  icons:
+    description: 'JSON array of icon objects with src, sizes, type, and purpose properties. Not required if favicons is enabled.'
+    required: false
 
   shortcuts:
     description: 'JSON array of shortcut objects with name, url, description, and icons properties'
