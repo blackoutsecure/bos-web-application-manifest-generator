@@ -1,14 +1,19 @@
-/**
- * Copyright 2025 Blackout Secure
- * SPDX-License-Identifier: Apache-2.0
- *
- * Web Application Manifest Generator - Main Entry Point
- * Generates site.webmanifest files according to W3C Web Application Manifest specification
- */
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Blackout Secure Web Application Manifest Generator
+// Copyright © 2025-2026 Blackout Secure
+// Licensed under Apache License 2.0
+// Website: https://blackoutsecure.app
+// Repository: https://github.com/blackoutsecure/bos-web-application-manifest-generator
+// Issues: https://github.com/blackoutsecure/bos-web-application-manifest-generator/issues
+// Docs: https://github.com/blackoutsecure/bos-web-application-manifest-generator#readme
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Generates W3C-compliant web application manifest files for PWAs
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const core = require('@actions/core');
 const fs = require('fs');
 const path = require('path');
+const { safeJsonParse, parseList, formatFileSize } = require('./lib/utils');
 
 // Initialize artifact client (supports both old and new @actions/artifact APIs)
 let artifactClient = null;
@@ -28,7 +33,8 @@ try {
 const { generateManifest, validateManifest, processManifest } = require('./lib/manifest-generator');
 const { processPageFiles } = require('./lib/page-injector');
 const { validateIcons } = require('./lib/icon-validator');
-const { version, defaults } = require('./lib/project-config');
+const config = require('./lib/project-config');
+const { defaults } = config;
 
 /**
  * Main action entry point
@@ -36,13 +42,11 @@ const { version, defaults } = require('./lib/project-config');
 async function run() {
   try {
     core.info('━'.repeat(50));
-    core.info(`🌐 Web Application Manifest Generator v${version}`);
+    core.info(`🌐 ${config.name} v${config.version}`);
     core.info('━'.repeat(50));
-    core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
-    core.info(
-      '💬 Support: github.com/blackoutsecure/bos-web-application-manifest-generator/issues'
-    );
+    core.info(`${config.copyright} | ${config.license}`);
+    core.info(`📦 ${config.repository}`);
+    core.info(`💬 Support: ${config.issues}`);
     core.info('━'.repeat(50));
     core.info('');
 
@@ -64,11 +68,10 @@ async function run() {
     const filename = core.getInput('filename') || defaults.filename;
     const inject_manifest_link = core.getBooleanInput('inject_manifest_link') !== false;
     const crossorigin_credentials = core.getBooleanInput('crossorigin_credentials') === true;
-    const inject_manifest_link_exts = (
-      core.getInput('inject_manifest_link_exts') || defaults.injectManifestLinkExts.join(' ')
-    )
-      .split(/\s+/)
-      .filter(Boolean);
+    const inject_manifest_link_exts = parseList(
+      core.getInput('inject_manifest_link_exts') || defaults.injectManifestLinkExts.join(' '),
+      defaults.injectManifestLinkExts
+    );
     const validate_manifest_assets = core.getBooleanInput('validate_manifest_assets') !== false;
 
     // Artifact upload configuration
@@ -78,29 +81,18 @@ async function run() {
       parseInt(core.getInput('artifact_retention_days') || '0', 10) || undefined;
 
     // Parse icons from JSON input
-    let icons = [];
-    const iconsInput = core.getInput('icons');
-    if (iconsInput) {
-      try {
-        icons = JSON.parse(iconsInput);
-      } catch (e) {
-        core.warning(`Failed to parse icons JSON: ${e.message}`);
-      }
-    }
-
-    if (!iconsInput) {
+    let icons = safeJsonParse(core.getInput('icons'), null);
+    if (!icons) {
+      icons = defaults.icons;
+    } else if (!Array.isArray(icons)) {
+      core.warning('Icons input must be a JSON array');
       icons = defaults.icons;
     }
 
     // Parse shortcuts from JSON input
-    let shortcuts = [];
-    const shortcutsInput = core.getInput('shortcuts');
-    if (shortcutsInput) {
-      try {
-        shortcuts = JSON.parse(shortcutsInput);
-      } catch (e) {
-        core.warning(`Failed to parse shortcuts JSON: ${e.message}`);
-      }
+    let shortcuts = safeJsonParse(core.getInput('shortcuts'), null);
+    if (!shortcuts || !Array.isArray(shortcuts)) {
+      shortcuts = [];
     }
 
     // Parse categories from comma-separated input
@@ -132,7 +124,8 @@ async function run() {
       categories,
     };
 
-    core.info('📋 Configuration:');
+    core.info('');
+    core.info('⚙️  Configuration:');
     core.info(`   Name: ${config.name || '(not set)'}`);
     core.info(`   Short Name: ${config.short_name || '(not set)'}`);
     core.info(`   Description: ${config.description || '(not set)'}`);
@@ -146,9 +139,6 @@ async function run() {
     core.info(`   Text Direction: ${dir || '(not set)'}`);
     core.info(`   App ID: ${id || '(not set)'}`);
     core.info(`   Icons Directory: ${icons_dir}`);
-    core.info(`   Icons: ${icons.length} defined`);
-    core.info(`   Shortcuts: ${shortcuts.length} defined`);
-    core.info(`   Categories: ${categories.length > 0 ? categories.join(', ') : '(none)'}`);
     core.info(`   Public Directory: ${public_dir}`);
     core.info(`   Output Filename: ${filename}`);
     core.info(`   Page Injection: ${inject_manifest_link ? 'enabled' : 'disabled'}`);
@@ -158,11 +148,46 @@ async function run() {
     }
     core.info(`   Manifest Asset Validation: ${validate_manifest_assets ? 'enabled' : 'disabled'}`);
     core.info(`   Upload Artifacts: ${upload_artifacts ? 'enabled' : 'disabled'}`);
+
+    // Display defined icons
+    if (icons.length > 0) {
+      core.info('');
+      core.info(`📷 Icons: ${icons.length} defined`);
+      icons.forEach((icon, index) => {
+        const purposes = icon.purpose ? ` [${icon.purpose}]` : '';
+        core.info(
+          `   ${index + 1}. ${icon.src} (${icon.sizes || 'auto'}) ${icon.type ? `${icon.type}` : ''}${purposes}`
+        );
+      });
+    }
+
+    // Display shortcuts if defined
+    if (shortcuts.length > 0) {
+      core.info('');
+      core.info(`⌘ Shortcuts: ${shortcuts.length} defined`);
+      shortcuts.forEach((shortcut, index) => {
+        core.info(`   ${index + 1}. ${shortcut.name} → ${shortcut.url}`);
+      });
+    }
+
+    // Display categories if defined
+    if (categories.length > 0) {
+      core.info('');
+      core.info(`📂 Categories: ${categories.length} defined`);
+      core.info(`   ${categories.join(', ')}`);
+    }
+
+    core.info('');
     core.info('━'.repeat(50));
+    core.info('');
+    core.info('📝 Generating manifest...');
 
     // Generate manifest
     const manifestJson = generateManifest(config);
-    const manifest = processManifest(config);
+    const manifest = processManifest(config, icons_dir);
+
+    core.info('');
+    core.info('🔍 Validation:');
 
     // Validate manifest
     const validation = validateManifest(manifest);
@@ -172,28 +197,38 @@ async function run() {
         core.warning(`   • ${error}`);
       });
     } else {
-      core.info('✅ Manifest validation passed');
+      core.info('   ✓ Manifest validation passed');
     }
 
     // Validate icon files if enabled (warn only)
     if (validate_manifest_assets && icons.length > 0) {
       const baseDir = path.resolve(public_dir);
-      const iconValidation = validateIcons(icons, baseDir);
+      const iconValidation = validateIcons(icons, baseDir, icons_dir);
 
       if (iconValidation.checkedFiles.length > 0) {
-        core.info('🔍 Manifest asset check (icons):');
+        core.info('   ✓ Assets checked');
         iconValidation.checkedFiles.forEach((icon) => {
           const marker = icon.exists ? '✓' : '✕';
           const level = icon.exists ? 'info' : 'warning';
-          const message = `   ${marker} ${icon.src} (${icon.sizes}) -> ${icon.path}`;
+          const message = `      ${marker} ${icon.src} (${icon.sizes})`;
           core[level](message);
         });
       }
 
       if (iconValidation.missing.length > 0) {
-        core.warning(`⚠️  Manifest asset check: ${iconValidation.missing.length} missing file(s)`);
+        core.warning(
+          `   ⚠️  ${iconValidation.missing.length} asset(s) not found in ${icons_dir} directory:`
+        );
+        iconValidation.missing.forEach((icon) => {
+          const relativePath = path.relative(path.resolve(public_dir), icon.path);
+          core.warning(`      ✕ ${relativePath}`);
+        });
       }
     }
+
+    core.info('');
+    core.info('━'.repeat(50));
+    core.info('');
 
     // Ensure public directory exists
     const outputPath = path.resolve(public_dir);
@@ -206,7 +241,7 @@ async function run() {
     const manifestPath = path.join(outputPath, filename);
     fs.writeFileSync(manifestPath, manifestJson, 'utf-8');
     core.info(`✅ Generated manifest: ${manifestPath}`);
-    core.info(`   File size: ${Buffer.byteLength(manifestJson, 'utf8')} bytes`);
+    core.info(`   Size: ${formatFileSize(Buffer.byteLength(manifestJson, 'utf8'))}`);
 
     // Optional artifact upload
     if (upload_artifacts && artifactClient) {
@@ -226,6 +261,9 @@ async function run() {
 
     // Inject manifest link into page files if enabled
     if (inject_manifest_link) {
+      core.info('');
+      core.info('━'.repeat(50));
+      core.info('');
       core.info('🔗 Injecting manifest link into page files...');
       core.info(`   Scanning for files with extensions: ${inject_manifest_link_exts.join(', ')}`);
       const pageResults = processPageFiles(
@@ -235,21 +273,24 @@ async function run() {
         crossorigin_credentials
       );
 
-      const totalDiscovered = pageResults.injected + pageResults.skipped;
-      core.info(`   📊 Discovery Results:`);
-      core.info(`      Total pages discovered: ${totalDiscovered}`);
+      const totalDiscovered =
+        pageResults.injected + pageResults.skipped + pageResults.errors.length;
+      core.info('');
+      core.info(
+        `   📊 Results: ${pageResults.injected} injected, ${pageResults.skipped} skipped, ${pageResults.errors.length} errors`
+      );
 
-      if (pageResults.injected > 0) {
-        core.info(`   ✅ Injection Results:`);
-        core.info(`      Pages injected/updated: ${pageResults.injected}`);
-        pageResults.files.forEach((file) => {
-          const relativePath = path.relative(process.cwd(), file);
-          core.info(`         • ${relativePath}`);
+      if (pageResults.details && pageResults.details.length > 0) {
+        pageResults.details.forEach((detail) => {
+          const relativePath = path.relative(process.cwd(), detail.file);
+          if (detail.status === 'injected') {
+            core.info(`      ✅ ${relativePath}`);
+          } else if (detail.status === 'skipped') {
+            core.info(`      ⚠️  ${relativePath} (already present)`);
+          } else if (detail.status === 'error') {
+            core.warning(`      ✕ ${relativePath} - ${detail.message}`);
+          }
         });
-      }
-
-      if (pageResults.skipped > 0) {
-        core.info(`   ℹ️  Pages already containing manifest link: ${pageResults.skipped}`);
       }
 
       if (totalDiscovered === 0) {
@@ -257,14 +298,10 @@ async function run() {
           `   ℹ️  No page files found with extensions: ${inject_manifest_link_exts.join(', ')}`
         );
       }
-
-      if (pageResults.errors.length > 0) {
-        core.info(`   ⚠️  Errors encountered (${pageResults.errors.length}):`);
-        pageResults.errors.forEach((err) => {
-          core.warning(`      • ${err.file || err.directory}: ${err.error}`);
-        });
-      }
     } else {
+      core.info('');
+      core.info('━'.repeat(50));
+      core.info('');
       core.info('⏭️  Page injection disabled');
     }
 
@@ -276,8 +313,8 @@ async function run() {
     core.info('━'.repeat(50));
     core.info('✅ Web Manifest generation complete!');
     core.info('━'.repeat(50));
-    core.info('© 2025 Blackout Secure | Apache License 2.0');
-    core.info('📦 github.com/blackoutsecure/bos-web-application-manifest-generator');
+    core.info(`${config.copyright}`);
+    core.info(`📦 ${config.repository}`);
     core.info('━'.repeat(50));
   } catch (error) {
     core.setFailed(`❌ Action failed: ${error.message}`);

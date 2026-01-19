@@ -1,118 +1,97 @@
-/**
- * Copyright 2025 Blackout Secure
- * SPDX-License-Identifier: Apache-2.0
- *
- * Web Application Manifest Generator
- * Generates site.webmanifest files according to W3C Web Application Manifest specification
- * https://w3c.github.io/manifest/
- */
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Blackout Secure Web Application Manifest Generator
+// Copyright © 2025-2026 Blackout Secure
+// Licensed under Apache License 2.0
+// Website: https://blackoutsecure.app
+// Repository: https://github.com/blackoutsecure/bos-web-application-manifest-generator
+// Issues: https://github.com/blackoutsecure/bos-web-application-manifest-generator/issues
+// Docs: https://github.com/blackoutsecure/bos-web-application-manifest-generator#readme
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Manifest generation and validation (W3C spec)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const config = require('./project-config');
+const { safeString, validateEnum } = require('./utils');
 
 /**
  * Validates and processes manifest configuration according to W3C spec
  * @param {Object} cfg - Manifest configuration object
+ * @param {String} iconsDir - Icons directory path (e.g., '/assets')
  * @returns {Object} Processed manifest object
  */
-function processManifest(cfg = {}) {
+function processManifest(cfg = {}, iconsDir = '') {
   const manifest = {};
 
-  // Required/recommended members according to W3C spec
+  const processStringMember = (value, defaultValue = '', trimmed = true) => {
+    if (typeof value === 'string') {
+      const trimmedValue = trimmed ? value.trim() : value;
+      return trimmedValue.length > 0 ? trimmedValue : defaultValue;
+    }
+    return defaultValue;
+  };
 
-  // name member - represents the name of the web application
-  // Always include name field (even if empty) for consistency
-  if (cfg.name !== undefined && typeof cfg.name === 'string') {
-    manifest.name = cfg.name.trim();
-  } else {
-    manifest.name = '';
-  }
+  const processUrlMember = (value, defaultValue = '/') => {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : defaultValue;
+    }
+    return defaultValue;
+  };
 
-  // short_name member - short version of the name
-  // Always include short_name field (even if empty) for consistency
-  if (cfg.short_name !== undefined && typeof cfg.short_name === 'string') {
-    manifest.short_name = cfg.short_name.trim();
-  } else {
-    manifest.short_name = '';
-  }
+  manifest.name = processStringMember(cfg.name, '');
+  manifest.short_name = processStringMember(cfg.short_name, '');
 
-  // description member (from manifest-app-info extension)
-  if (cfg.description && typeof cfg.description === 'string') {
+  if (typeof cfg.description === 'string' && cfg.description.trim().length > 0) {
     manifest.description = cfg.description.trim();
   }
 
-  // start_url member - URL that loads when the user launches the application
-  if (cfg.start_url && typeof cfg.start_url === 'string') {
-    manifest.start_url = cfg.start_url.trim();
-  } else {
-    manifest.start_url = config.defaults.startUrl; // Default to root
-  }
+  manifest.start_url = processUrlMember(cfg.start_url, config.defaults.startUrl);
 
-  // id member - unique identifier for the application
-  if (cfg.id && typeof cfg.id === 'string') {
+  if (typeof cfg.id === 'string' && cfg.id.trim().length > 0) {
     manifest.id = cfg.id.trim();
   }
 
-  // scope member - navigation scope of the web application
-  if (cfg.scope && typeof cfg.scope === 'string') {
-    manifest.scope = cfg.scope.trim();
-  } else {
-    manifest.scope = config.defaults.scope; // Default scope
-  }
+  manifest.scope = processUrlMember(cfg.scope, config.defaults.scope);
+  manifest.display = validateEnum(
+    cfg.display,
+    config.validation.displayModes,
+    config.defaults.display
+  );
+  manifest.orientation = validateEnum(
+    cfg.orientation,
+    config.validation.orientations,
+    config.defaults.orientation
+  );
+  manifest.theme_color = processStringMember(cfg.theme_color, config.defaults.themeColor);
+  manifest.background_color = processStringMember(
+    cfg.background_color,
+    config.defaults.backgroundColor
+  );
 
-  // display member - preferred display mode
-  if (cfg.display && config.validation.displayModes.includes(cfg.display.toLowerCase())) {
-    manifest.display = cfg.display.toLowerCase();
-  } else {
-    manifest.display = config.defaults.display; // Default display mode
-  }
-
-  // orientation member - default screen orientation
-  if (cfg.orientation && config.validation.orientations.includes(cfg.orientation.toLowerCase())) {
-    manifest.orientation = cfg.orientation.toLowerCase();
-  } else {
-    manifest.orientation = config.defaults.orientation;
-  }
-
-  // theme_color member - default theme color for the application
-  if (cfg.theme_color && typeof cfg.theme_color === 'string') {
-    manifest.theme_color = cfg.theme_color.trim();
-  } else {
-    manifest.theme_color = config.defaults.themeColor;
-  }
-
-  // background_color member - expected background color
-  if (cfg.background_color && typeof cfg.background_color === 'string') {
-    manifest.background_color = cfg.background_color.trim();
-  } else {
-    manifest.background_color = config.defaults.backgroundColor;
-  }
-
-  // lang member - language for the manifest's values
-  if (cfg.lang && typeof cfg.lang === 'string') {
+  if (typeof cfg.lang === 'string' && cfg.lang.trim().length > 0) {
     manifest.lang = cfg.lang.trim();
   }
 
-  // dir member - text direction
-  if (cfg.dir && config.validation.textDirections.includes(cfg.dir.toLowerCase())) {
-    manifest.dir = cfg.dir.toLowerCase();
+  if (cfg.dir) {
+    const validDir = validateEnum(cfg.dir, config.validation.textDirections, null);
+    if (validDir) {
+      manifest.dir = validDir;
+    }
   }
 
-  // icons member - array of image resources
   if (Array.isArray(cfg.icons) && cfg.icons.length > 0) {
-    manifest.icons = processIcons(cfg.icons);
+    manifest.icons = processIcons(cfg.icons, iconsDir);
   } else {
-    manifest.icons = processIcons(config.defaults.icons);
+    manifest.icons = processIcons(config.defaults.icons, iconsDir);
   }
 
-  // shortcuts member - array of shortcut items
   if (Array.isArray(cfg.shortcuts)) {
-    manifest.shortcuts = processShortcuts(cfg.shortcuts);
+    manifest.shortcuts = processShortcuts(cfg.shortcuts, iconsDir);
   }
 
-  // categories member (from manifest-app-info extension)
   if (Array.isArray(cfg.categories)) {
     manifest.categories = cfg.categories
-      .filter((cat) => typeof cat === 'string')
+      .filter((cat) => typeof cat === 'string' && cat.trim().length > 0)
       .map((cat) => cat.trim());
   }
 
@@ -122,27 +101,23 @@ function processManifest(cfg = {}) {
 /**
  * Process icons array according to W3C Image Resource spec
  * @param {Array} icons - Array of icon objects
+ * @param {String} iconsDir - Icons directory path (e.g., '/assets')
  * @returns {Array} Processed icons array
  */
-function processIcons(icons) {
+function processIcons(icons, iconsDir = '') {
+  const normalizeIconPath = (src, dir) => {
+    const cleanSrc = safeString(src);
+    if (!cleanSrc || dir === '') return cleanSrc;
+    if (cleanSrc.startsWith('/')) return cleanSrc;
+    const normalizedDir = dir.startsWith('/') ? dir : '/' + dir;
+    return normalizedDir + '/' + cleanSrc;
+  };
   return icons
     .filter((icon) => icon && typeof icon === 'object' && icon.src)
     .map((icon) => {
-      const processed = {
-        src: icon.src.trim(),
-      };
-
-      // sizes member - space-separated list of sizes
-      if (icon.sizes && typeof icon.sizes === 'string') {
-        processed.sizes = icon.sizes.trim();
-      }
-
-      // type member - MIME type of the image
-      if (icon.type && typeof icon.type === 'string') {
-        processed.type = icon.type.trim();
-      }
-
-      // purpose member - space-separated list of purposes
+      const processed = { src: normalizeIconPath(icon.src, iconsDir) };
+      if (icon.sizes) processed.sizes = safeString(icon.sizes);
+      if (icon.type) processed.type = safeString(icon.type);
       if (icon.purpose && typeof icon.purpose === 'string') {
         const purposes = icon.purpose
           .toLowerCase()
@@ -152,7 +127,6 @@ function processIcons(icons) {
           processed.purpose = purposes.join(' ');
         }
       }
-
       return processed;
     });
 }
@@ -160,31 +134,28 @@ function processIcons(icons) {
 /**
  * Process shortcuts array according to W3C spec
  * @param {Array} shortcuts - Array of shortcut objects
+ * @param {String} iconsDir - Icons directory path (e.g., '/assets')
  * @returns {Array} Processed shortcuts array
  */
-function processShortcuts(shortcuts) {
+function processShortcuts(shortcuts, iconsDir = '') {
   return shortcuts
-    .filter((shortcut) => {
-      return shortcut && typeof shortcut === 'object' && shortcut.name && shortcut.url;
-    })
+    .filter(
+      (shortcut) =>
+        shortcut &&
+        typeof shortcut === 'object' &&
+        typeof shortcut.name === 'string' &&
+        typeof shortcut.url === 'string' &&
+        shortcut.name.trim().length > 0 &&
+        shortcut.url.trim().length > 0
+    )
     .map((shortcut) => {
       const processed = {
-        name: shortcut.name.trim(),
-        url: shortcut.url.trim(),
+        name: safeString(shortcut.name),
+        url: safeString(shortcut.url),
       };
-
-      if (shortcut.short_name && typeof shortcut.short_name === 'string') {
-        processed.short_name = shortcut.short_name.trim();
-      }
-
-      if (shortcut.description && typeof shortcut.description === 'string') {
-        processed.description = shortcut.description.trim();
-      }
-
-      if (Array.isArray(shortcut.icons)) {
-        processed.icons = processIcons(shortcut.icons);
-      }
-
+      if (shortcut.short_name) processed.short_name = safeString(shortcut.short_name);
+      if (shortcut.description) processed.description = safeString(shortcut.description);
+      if (Array.isArray(shortcut.icons)) processed.icons = processIcons(shortcut.icons, iconsDir);
       return processed;
     });
 }
@@ -206,33 +177,22 @@ function generateManifest(config) {
  */
 function validateManifest(manifest) {
   const errors = [];
-
-  // Check for recommended members
   if (!manifest.name && !manifest.short_name) {
     errors.push(
       'At least one of "name" or "short_name" should be provided for better user experience'
     );
   }
-
   if (!manifest.icons || !Array.isArray(manifest.icons) || manifest.icons.length === 0) {
     errors.push('Icons array should be provided for better user experience');
   }
-
-  // Validate icon formats
   if (manifest.icons && Array.isArray(manifest.icons)) {
     manifest.icons.forEach((icon, index) => {
       if (!icon.src) {
         errors.push(`Icon at index ${index} is missing required "src" member`);
       }
-
-      // Discourage combined purpose values like "any maskable" per PWA best practices
       if (icon.purpose && typeof icon.purpose === 'string') {
         const purposes = icon.purpose.toLowerCase().split(/\s+/).filter(Boolean);
-
-        const hasAny = purposes.includes('any');
-        const hasMaskable = purposes.includes('maskable');
-
-        if (hasAny && hasMaskable) {
+        if (purposes.includes('any') && purposes.includes('maskable')) {
           errors.push(
             `Icon at index ${index} uses discouraged purpose combination "any maskable"; prefer separate icons for each purpose`
           );
@@ -240,23 +200,14 @@ function validateManifest(manifest) {
       }
     });
   }
-
-  // Validate shortcuts
   if (manifest.shortcuts && Array.isArray(manifest.shortcuts)) {
     manifest.shortcuts.forEach((shortcut, index) => {
-      if (!shortcut.name) {
+      if (!shortcut.name)
         errors.push(`Shortcut at index ${index} is missing required "name" member`);
-      }
-      if (!shortcut.url) {
-        errors.push(`Shortcut at index ${index} is missing required "url" member`);
-      }
+      if (!shortcut.url) errors.push(`Shortcut at index ${index} is missing required "url" member`);
     });
   }
-
-  return {
-    isValid: errors.length === 0,
-    errors: errors,
-  };
+  return { isValid: errors.length === 0, errors };
 }
 
 /**

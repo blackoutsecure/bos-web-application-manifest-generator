@@ -1,10 +1,14 @@
-/**
- * Copyright 2025-2026 Blackout Secure
- * SPDX-License-Identifier: Apache-2.0
- *
- * Project Configuration
- * Central source of truth for project metadata, version information, and constants
- */
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Blackout Secure Web Application Manifest Generator
+// Copyright © 2025-2026 Blackout Secure
+// Licensed under Apache License 2.0
+// Website: https://blackoutsecure.app
+// Repository: https://github.com/blackoutsecure/bos-web-application-manifest-generator
+// Issues: https://github.com/blackoutsecure/bos-web-application-manifest-generator/issues
+// Docs: https://github.com/blackoutsecure/bos-web-application-manifest-generator#readme
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Project configuration and metadata
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 module.exports = {
   // Project metadata
@@ -54,11 +58,145 @@ module.exports = {
     iconsDir: '/icons/',
     filename: 'site.webmanifest',
     injectManifestLink: true,
+    injectPwaMetaTags: true,
+    injectFaviconLinks: true,
+    injectMobileWebAppCapable: true,
     crossoriginCredentials: false,
     injectManifestLinkExts: ['html', 'htm'],
   },
 
-  // W3C spec validation constants
+  // Injectable HTML head elements for PWA support
+  injectables: [
+    {
+      id: 'favicon-ico',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: '/favicon.ico',
+      description: 'Favicon ICO',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'favicon-16',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16',
+      href: '/favicon-16x16.png',
+      description: 'Favicon 16x16',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'favicon-32',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      href: '/favicon-32x32.png',
+      description: 'Favicon 32x32',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'android-chrome-192',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '192x192',
+      href: '/android-chrome-192x192.png',
+      description: 'Android Chrome 192x192',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'android-chrome-256',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '256x256',
+      href: '/android-chrome-256x256.png',
+      description: 'Android Chrome 256x256',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'android-chrome-512',
+      tag: 'link',
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '512x512',
+      href: '/android-chrome-512x512.png',
+      description: 'Android Chrome 512x512',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'apple-touch-icon',
+      tag: 'link',
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
+      description: 'Apple Touch Icon',
+      controlVariable: 'injectFaviconLinks',
+    },
+    {
+      id: 'manifest',
+      tag: 'link',
+      rel: 'manifest',
+      href: '/site.webmanifest',
+      dynamicValue: 'filename',
+      description: 'Web App Manifest',
+      controlVariable: 'injectManifestLink',
+    },
+    {
+      id: 'theme-color',
+      tag: 'meta',
+      name: 'theme-color',
+      content: null,
+      dynamicValue: 'themeColor',
+      description: 'Theme Color',
+      controlVariable: 'injectPwaMetaTags',
+    },
+    {
+      id: 'mobile-web-app-capable',
+      tag: 'meta',
+      name: 'mobile-web-app-capable',
+      content: 'yes',
+      description: 'Mobile Web App Capable',
+      controlVariable: 'injectMobileWebAppCapable',
+    },
+    {
+      id: 'apple-mobile-web-app-status-bar-style',
+      tag: 'meta',
+      name: 'apple-mobile-web-app-status-bar-style',
+      content: 'black-translucent',
+      description: 'Apple Status Bar Style',
+      controlVariable: 'injectPwaMetaTags',
+    },
+    {
+      id: 'apple-mobile-web-app-title',
+      tag: 'meta',
+      name: 'apple-mobile-web-app-title',
+      content: null,
+      dynamicValue: 'name',
+      description: 'Apple Web App Title',
+      controlVariable: 'injectPwaMetaTags',
+    },
+    {
+      id: 'application-name',
+      tag: 'meta',
+      name: 'application-name',
+      content: null,
+      dynamicValue: 'name',
+      description: 'Application Name',
+      controlVariable: 'injectPwaMetaTags',
+    },
+    {
+      id: 'msapplication-tilecolor',
+      tag: 'meta',
+      name: 'msapplication-TileColor',
+      content: null,
+      dynamicValue: 'themeColor',
+      description: 'MS Tile Color',
+      controlVariable: 'injectPwaMetaTags',
+    },
+  ],
   validation: {
     displayModes: ['fullscreen', 'standalone', 'minimal-ui', 'browser'],
     orientations: [

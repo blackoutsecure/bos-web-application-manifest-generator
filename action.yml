@@ -105,6 +105,21 @@ inputs:
     required: false
     default: 'true'
 
+  inject_pwa_meta_tags:
+    description: 'Inject PWA meta tags into page files (theme-color, mobile-web-app-capable, etc.) (default: true)'
+    required: false
+    default: 'true'
+
+  inject_favicon_links:
+    description: 'Inject favicon link tags into page files (default: true)'
+    required: false
+    default: 'true'
+
+  inject_mobile_web_app_capable:
+    description: 'Inject mobile-web-app-capable meta tag (default: true)'
+    required: false
+    default: 'true'
+
   crossorigin_credentials:
     description: 'Add crossorigin="use-credentials" to manifest link (default: false)'
     required: false

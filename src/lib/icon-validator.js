@@ -1,45 +1,30 @@
-/**
- * Copyright 2025 Blackout Secure
- * SPDX-License-Identifier: Apache-2.0
- *
- * Icon Validator
- * Validates that icon files referenced in the manifest exist
- */
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Blackout Secure Web Application Manifest Generator
+// Copyright © 2025-2026 Blackout Secure
+// Licensed under Apache License 2.0
+// Website: https://blackoutsecure.app
+// Repository: https://github.com/blackoutsecure/bos-web-application-manifest-generator
+// Issues: https://github.com/blackoutsecure/bos-web-application-manifest-generator/issues
+// Docs: https://github.com/blackoutsecure/bos-web-application-manifest-generator#readme
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Icon file existence validation
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Validates icon files exist in the project
- * @param {array} icons - Array of icon objects from manifest
- * @param {string} baseDir - Base directory to check (usually project root)
- * @returns {object} Validation result with missing icons and warnings
- */
-function validateIcons(icons, baseDir) {
-  const results = {
-    valid: true,
-    missing: [],
-    checked: 0,
-    checkedFiles: [],
-  };
-
-  if (!icons || icons.length === 0) {
-    return results;
-  }
-
+function validateIcons(icons, baseDir, iconsDir = '') {
+  const results = { valid: true, missing: [], checked: 0, checkedFiles: [] };
+  if (!icons || icons.length === 0) return results;
   icons.forEach((icon) => {
-    if (!icon.src) {
-      return;
-    }
-
+    if (!icon.src) return;
     results.checked++;
-
-    // Remove leading slash for file path
-    const filePath = icon.src.startsWith('/') ? icon.src.slice(1) : icon.src;
-    const fullPath = path.join(baseDir, filePath);
-
+    let filePath = icon.src;
+    if (filePath.startsWith('/')) {
+      filePath = filePath.slice(1);
+    }
+    const fullPath = path.join(baseDir, iconsDir, filePath);
     const exists = fs.existsSync(fullPath);
-
     results.checkedFiles.push({
       src: icon.src,
       path: fullPath,
@@ -47,7 +32,6 @@ function validateIcons(icons, baseDir) {
       type: icon.type || 'unspecified',
       exists,
     });
-
     if (!exists) {
       results.valid = false;
       results.missing.push({
@@ -58,7 +42,6 @@ function validateIcons(icons, baseDir) {
       });
     }
   });
-
   return results;
 }
 
