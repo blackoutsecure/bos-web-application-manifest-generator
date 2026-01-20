@@ -107,10 +107,16 @@ function processManifest(cfg = {}, iconsDir = '') {
 function processIcons(icons, iconsDir = '') {
   const normalizeIconPath = (src, dir) => {
     const cleanSrc = safeString(src);
-    if (!cleanSrc || dir === '') return cleanSrc;
-    if (cleanSrc.startsWith('/')) return cleanSrc;
+    if (!cleanSrc) return cleanSrc;
+    if (!dir || dir === '') return cleanSrc;
+    // Remove leading slash from src to avoid double slashes when joining
+    const srcWithoutLeadingSlash = cleanSrc.startsWith('/') ? cleanSrc.slice(1) : cleanSrc;
     const normalizedDir = dir.startsWith('/') ? dir : '/' + dir;
-    return normalizedDir + '/' + cleanSrc;
+    // Ensure normalizedDir ends without slash to join cleanly
+    const dirWithoutTrailingSlash = normalizedDir.endsWith('/')
+      ? normalizedDir.slice(0, -1)
+      : normalizedDir;
+    return dirWithoutTrailingSlash + '/' + srcWithoutLeadingSlash;
   };
   return icons
     .filter((icon) => icon && typeof icon === 'object' && icon.src)
