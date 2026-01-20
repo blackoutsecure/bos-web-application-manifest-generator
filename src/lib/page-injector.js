@@ -65,7 +65,7 @@ function processPageFiles(dirPath, extensions, filename, useCredentials = false)
         const ext = path.extname(file).toLowerCase().slice(1);
         if (!extensions.includes(ext)) return;
         const content = fs.readFileSync(filePath, 'utf8');
-        const { found } = findManifestLink(content);
+        const { found: _found } = findManifestLink(content);
         const updated = injectManifestLink(content, filename, useCredentials);
         if (updated !== content) {
           fs.writeFileSync(filePath, updated, 'utf8');
