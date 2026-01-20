@@ -106,7 +106,7 @@ async function run() {
     }
 
     // Build configuration object
-    const config = {
+    const manifestConfig = {
       name,
       short_name,
       description,
@@ -127,7 +127,7 @@ async function run() {
 
     core.info('');
     core.info('⚙️  Configuration:');
-    core.info(`   Name: ${config.name || '(not set)'}`);
+    core.info(`   Name: ${manifestConfig.name || '(not set)'}`);
     core.info(`   Short Name: ${config.short_name || '(not set)'}`);
     core.info(`   Description: ${config.description || '(not set)'}`);
     core.info(`   Start URL: ${start_url}`);
@@ -184,8 +184,8 @@ async function run() {
     core.info('📝 Generating manifest...');
 
     // Generate manifest
-    const manifestJson = generateManifest(config, icons_dir);
-    const manifest = processManifest(config, icons_dir);
+    const manifestJson = generateManifest(manifestConfig, icons_dir);
+    const manifest = processManifest(manifestConfig, icons_dir);
 
     core.info('');
     core.info('🔍 Validation:');
