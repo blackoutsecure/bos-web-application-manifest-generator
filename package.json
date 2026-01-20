@@ -1,6 +1,6 @@
 {
   "name": "bos-web-application-manifest-generator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "Generate W3C-compliant web manifest files for Progressive Web Apps with full customization",
   "author": "Blackout Secure <https://github.com/blackoutsecure>",
