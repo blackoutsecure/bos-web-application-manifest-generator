@@ -204,9 +204,9 @@ async function run() {
     }
 
     // Validate icon files if enabled (warn only)
-    if (validate_manifest_assets && icons.length > 0) {
+    if (validate_manifest_assets && manifest.icons && manifest.icons.length > 0) {
       const baseDir = path.resolve(public_dir);
-      const iconValidation = validateIcons(icons, baseDir, icons_dir);
+      const iconValidation = validateIcons(manifest.icons, baseDir, '');
 
       if (iconValidation.checkedFiles.length > 0) {
         core.info('   ✓ Assets checked');
@@ -219,9 +219,7 @@ async function run() {
       }
 
       if (iconValidation.missing.length > 0) {
-        core.warning(
-          `   ⚠️  ${iconValidation.missing.length} asset(s) not found in ${icons_dir} directory:`
-        );
+        core.warning(`   ⚠️  ${iconValidation.missing.length} asset(s) not found:`);
         iconValidation.missing.forEach((icon) => {
           const relativePath = path.relative(path.resolve(public_dir), icon.path);
           core.warning(`      ✕ ${relativePath}`);
