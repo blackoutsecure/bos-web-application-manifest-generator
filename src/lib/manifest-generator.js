@@ -163,10 +163,11 @@ function processShortcuts(shortcuts, iconsDir = '') {
 /**
  * Generate a site.webmanifest file from configuration
  * @param {Object} config - Manifest configuration
+ * @param {String} iconsDir - Icons directory path (e.g., '/assets')
  * @returns {string} JSON string of the manifest
  */
-function generateManifest(config) {
-  const manifest = processManifest(config);
+function generateManifest(config, iconsDir = '') {
+  const manifest = processManifest(config, iconsDir);
   return JSON.stringify(manifest, null, 2);
 }
 

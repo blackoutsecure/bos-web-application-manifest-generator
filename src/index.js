@@ -119,6 +119,7 @@ async function run() {
       lang,
       dir,
       id,
+      icons_dir,
       icons,
       shortcuts,
       categories,
@@ -183,7 +184,7 @@ async function run() {
     core.info('📝 Generating manifest...');
 
     // Generate manifest
-    const manifestJson = generateManifest(config);
+    const manifestJson = generateManifest(config, icons_dir);
     const manifest = processManifest(config, icons_dir);
 
     core.info('');
