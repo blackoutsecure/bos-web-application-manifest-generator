@@ -150,11 +150,20 @@ async function run() {
     core.info(`   Manifest Asset Validation: ${validate_manifest_assets ? 'enabled' : 'disabled'}`);
     core.info(`   Upload Artifacts: ${upload_artifacts ? 'enabled' : 'disabled'}`);
 
-    // Display defined icons
-    if (icons.length > 0) {
+    core.info('');
+    core.info('━'.repeat(50));
+    core.info('');
+    core.info('📝 Generating manifest...');
+
+    // Generate manifest
+    const manifestJson = generateManifest(manifestConfig, icons_dir);
+    const manifest = processManifest(manifestConfig, icons_dir);
+
+    // Display defined icons (after processing to show icons_dir applied)
+    if (manifest.icons && manifest.icons.length > 0) {
       core.info('');
-      core.info(`📷 Icons: ${icons.length} defined`);
-      icons.forEach((icon, index) => {
+      core.info(`📷 Icons: ${manifest.icons.length} defined`);
+      manifest.icons.forEach((icon, index) => {
         const purposes = icon.purpose ? ` [${icon.purpose}]` : '';
         core.info(
           `   ${index + 1}. ${icon.src} (${icon.sizes || 'auto'}) ${icon.type ? `${icon.type}` : ''}${purposes}`
@@ -179,13 +188,6 @@ async function run() {
     }
 
     core.info('');
-    core.info('━'.repeat(50));
-    core.info('');
-    core.info('📝 Generating manifest...');
-
-    // Generate manifest
-    const manifestJson = generateManifest(manifestConfig, icons_dir);
-    const manifest = processManifest(manifestConfig, icons_dir);
 
     core.info('');
     core.info('🔍 Validation:');
