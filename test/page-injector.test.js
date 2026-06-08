@@ -21,7 +21,7 @@ describe('Page Injector', () => {
       const link = generateManifestLink('site.webmanifest', true);
       assert.strictEqual(
         link,
-        '<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">'
+        '<link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">',
       );
     });
   });

@@ -55,17 +55,17 @@ function processManifest(cfg = {}, iconsDir = '') {
   manifest.display = validateEnum(
     cfg.display,
     config.validation.displayModes,
-    config.defaults.display
+    config.defaults.display,
   );
   manifest.orientation = validateEnum(
     cfg.orientation,
     config.validation.orientations,
-    config.defaults.orientation
+    config.defaults.orientation,
   );
   manifest.theme_color = processStringMember(cfg.theme_color, config.defaults.themeColor);
   manifest.background_color = processStringMember(
     cfg.background_color,
-    config.defaults.backgroundColor
+    config.defaults.backgroundColor,
   );
 
   if (typeof cfg.lang === 'string' && cfg.lang.trim().length > 0) {
@@ -152,7 +152,7 @@ function processShortcuts(shortcuts, iconsDir = '') {
         typeof shortcut.name === 'string' &&
         typeof shortcut.url === 'string' &&
         shortcut.name.trim().length > 0 &&
-        shortcut.url.trim().length > 0
+        shortcut.url.trim().length > 0,
     )
     .map((shortcut) => {
       const processed = {
@@ -186,7 +186,7 @@ function validateManifest(manifest) {
   const errors = [];
   if (!manifest.name && !manifest.short_name) {
     errors.push(
-      'At least one of "name" or "short_name" should be provided for better user experience'
+      'At least one of "name" or "short_name" should be provided for better user experience',
     );
   }
   if (!manifest.icons || !Array.isArray(manifest.icons) || manifest.icons.length === 0) {
@@ -201,7 +201,7 @@ function validateManifest(manifest) {
         const purposes = icon.purpose.toLowerCase().split(/\s+/).filter(Boolean);
         if (purposes.includes('any') && purposes.includes('maskable')) {
           errors.push(
-            `Icon at index ${index} uses discouraged purpose combination "any maskable"; prefer separate icons for each purpose`
+            `Icon at index ${index} uses discouraged purpose combination "any maskable"; prefer separate icons for each purpose`,
           );
         }
       }

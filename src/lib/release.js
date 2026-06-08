@@ -134,7 +134,7 @@ function release(versionType = null) {
 
   console.log('📝 Next steps:');
   console.log(
-    '1. Go to: https://github.com/blackoutsecure/bos-web-application-manifest-generator/releases'
+    '1. Go to: https://github.com/blackoutsecure/bos-web-application-manifest-generator/releases',
   );
   console.log(`2. Draft a new release for tag v${version}`);
   console.log("3. Check 'Publish this Action to the GitHub Marketplace'");

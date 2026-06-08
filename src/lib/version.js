@@ -50,7 +50,7 @@ function updateIndexJs(version) {
   let content = fs.readFileSync(INDEX_JS_PATH, 'utf8');
   content = content.replace(
     /Web Application Manifest Generator v[\d.]+/,
-    `Web Application Manifest Generator v${version}`
+    `Web Application Manifest Generator v${version}`,
   );
   fs.writeFileSync(INDEX_JS_PATH, content, 'utf8');
 }

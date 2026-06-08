@@ -335,7 +335,7 @@ describe('Web Application Manifest Generator', () => {
 
       assert.strictEqual(result.isValid, false);
       assert(
-        result.errors.some((e) => e.includes('any maskable') && e.includes('discouraged purpose'))
+        result.errors.some((e) => e.includes('any maskable') && e.includes('discouraged purpose')),
       );
     });
 

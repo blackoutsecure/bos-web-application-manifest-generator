@@ -70,7 +70,7 @@ async function run() {
     const crossorigin_credentials = core.getBooleanInput('crossorigin_credentials') === true;
     const inject_manifest_link_exts = parseList(
       core.getInput('inject_manifest_link_exts') || defaults.injectManifestLinkExts.join(' '),
-      defaults.injectManifestLinkExts
+      defaults.injectManifestLinkExts,
     );
     const validate_manifest_assets = core.getBooleanInput('validate_manifest_assets') !== false;
 
@@ -166,7 +166,7 @@ async function run() {
       manifest.icons.forEach((icon, index) => {
         const purposes = icon.purpose ? ` [${icon.purpose}]` : '';
         core.info(
-          `   ${index + 1}. ${icon.src} (${icon.sizes || 'auto'}) ${icon.type ? `${icon.type}` : ''}${purposes}`
+          `   ${index + 1}. ${icon.src} (${icon.sizes || 'auto'}) ${icon.type ? `${icon.type}` : ''}${purposes}`,
         );
       });
     }
@@ -255,7 +255,7 @@ async function run() {
         core.info(`✅ Artifact uploaded: ${artifact_name}`);
       } catch (err) {
         core.warning(
-          `⚠️  Failed to upload artifacts: ${err instanceof Error ? err.message : String(err)}`
+          `⚠️  Failed to upload artifacts: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     }
@@ -271,14 +271,14 @@ async function run() {
         outputPath,
         inject_manifest_link_exts,
         filename,
-        crossorigin_credentials
+        crossorigin_credentials,
       );
 
       const totalDiscovered =
         pageResults.injected + pageResults.skipped + pageResults.errors.length;
       core.info('');
       core.info(
-        `   📊 Results: ${pageResults.injected} injected, ${pageResults.skipped} skipped, ${pageResults.errors.length} errors`
+        `   📊 Results: ${pageResults.injected} injected, ${pageResults.skipped} skipped, ${pageResults.errors.length} errors`,
       );
 
       if (pageResults.details && pageResults.details.length > 0) {
@@ -296,7 +296,7 @@ async function run() {
 
       if (totalDiscovered === 0) {
         core.info(
-          `   ℹ️  No page files found with extensions: ${inject_manifest_link_exts.join(', ')}`
+          `   ℹ️  No page files found with extensions: ${inject_manifest_link_exts.join(', ')}`,
         );
       }
     } else {
