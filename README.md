@@ -12,8 +12,159 @@ Generate W3C-compliant web app manifest files for PWAs. Sensible defaults, custo
 - Valid W3C manifest generation with defaults
 - Custom icons, shortcuts, colors, display, orientation
 - Warn-only icon file validation
-- Auto inject `<link rel="manifest">` into HTML
+- Auto inject `<link rel="manifest">`, PWA meta tags, and favicon links into HTML
+- **Layered configuration**: bundled marketplace baseline → org global config → repo config → action inputs
+- **PWA readiness audit**: 20 evidence-based controls with per-rule `fail`/`warn`/`skip` severities
+- **Enterprise reporting**: Markdown step summary, SARIF 2.1.0 for code scanning, JSON report, recommendations sidecar
+- **AI findings summary**: optional GitHub Models summary with a deterministic local fallback
+- **Local CLI**: `bos-web-manifest validate|audit|sarif` reproduces CI output on your machine
 - Artifact upload for easy download from workflow runs
+
+## 🗂️ Layered Configuration
+
+Configuration is deep-merged, then validated. Precedence, lowest to highest:
+
+1. **Bundled marketplace baseline** — `src/marketplace-config.json`, shipped with the action
+2. **Organization global config** — `.github/blackout-secure-web-application-manifest-generator-global-config.yml`
+3. **Repository config** — first match of `.github/bos-universal-config.json|yml|yaml`, `bos-universal-config.*`, or `.bos-web-manifest.yml|yaml`
+4. **Action inputs** — any input you explicitly set wins over every config tier
+
+Unknown top-level keys are ignored so the same `bos-universal-config.json` can be shared
+with other Blackout Secure kits. Unknown keys **inside** `web_manifest.audit.rules` are
+rejected so a typo fails fast.
+
+```yaml
+# .github/bos-universal-config.json (YAML shown for readability)
+web_manifest:
+  owner: blackoutsecure
+
+  generate:
+    filename: site.webmanifest
+    inject_manifest_link: true
+    inject_pwa_meta_tags: true
+    inject_favicon_links: true
+    inject_mobile_web_app_capable: true
+    crossorigin_credentials: false
+
+  audit:
+    enable: true
+    fail_on: fail # or `never` to keep the audit advisory
+    max_size_kb: 128
+    rules:
+      require_icons: fail
+      require_192_icon: fail
+      require_id: warn
+
+  reporting:
+    step_summary: true
+    sarif: true
+    json_report: true
+    recommendations: true
+
+  remediation:
+    enable_ai_findings_summary: true
+    ai_findings_summary_provider: auto
+    local_heuristic_fallback: true
+```
+
+## 📱 PWA Readiness Audit
+
+Every control is evidence-based and configurable through `web_manifest.audit.rules.<name>`.
+A rule set to `skip` still emits a finding, so the report records that the control was
+deliberately not assessed.
+
+| Rule    | Config key                  | Checks                                                        | Default |
+| ------- | --------------------------- | ------------------------------------------------------------- | ------- |
+| `WM001` | `require_name`              | `name` is declared                                            | `warn`  |
+| `WM002` | `require_short_name`        | `short_name` is declared                                      | `warn`  |
+| `WM003` | `require_icons`             | At least one icon is declared                                 | `warn`  |
+| `WM004` | `require_start_url`         | `start_url` is declared                                       | `warn`  |
+| `WM005` | `require_display`           | `display` is declared                                         | `warn`  |
+| `WM010` | `require_192_icon`          | A ≥192px icon exists (Chromium installability)                | `warn`  |
+| `WM011` | `require_512_icon`          | A ≥512px icon exists (splash screens)                         | `warn`  |
+| `WM012` | `require_maskable_icon`     | An icon declares `"purpose": "maskable"`                      | `warn`  |
+| `WM013` | `forbid_any_maskable_combo` | No icon uses the discouraged `"any maskable"` purpose         | `warn`  |
+| `WM014` | `icon_files_exist`          | Local icon `src` paths resolve to published files             | `warn`  |
+| `WM020` | `valid_theme_color`         | `theme_color` is a valid CSS color                            | `warn`  |
+| `WM021` | `valid_background_color`    | `background_color` is a valid CSS color                       | `warn`  |
+| `WM022` | `valid_display_mode`        | `display` is one of the W3C display modes                     | `warn`  |
+| `WM023` | `valid_orientation`         | `orientation` is a valid W3C orientation                      | `warn`  |
+| `WM030` | `start_url_in_scope`        | `start_url` falls inside `scope`                              | `warn`  |
+| `WM031` | `require_id`                | `id` is declared so app identity survives `start_url` changes | `skip`  |
+| `WM032` | `valid_lang`                | `lang` is a valid BCP 47 tag                                  | `skip`  |
+| `WM040` | `require_manifest_link`     | At least one HTML page links the manifest                     | `warn`  |
+| `WM041` | `file_size_limit`           | Manifest stays within `audit.max_size_kb`                     | `warn`  |
+| `WM042` | `valid_json`                | Manifest is valid UTF-8 JSON without a byte-order mark        | `warn`  |
+
+No rule defaults to `fail`, so adopting the audit never breaks an existing pipeline on
+day one. Opt individual rules up to `fail` once your manifest is clean.
+
+### Configuration, Audit & Reporting Inputs
+
+| Input                    | Description                                                | Default                                                                        |
+| ------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `config_path`            | Explicit repository config file                            | auto-discover                                                                  |
+| `global_config_path`     | Organization-level global config                           | `.github/blackout-secure-web-application-manifest-generator-global-config.yml` |
+| `use_global_config`      | Global tier: `auto`, `true` (require), `false` (disable)   | `auto`                                                                         |
+| `use_marketplace_config` | Apply the bundled marketplace baseline                     | `true`                                                                         |
+| `enable_audit`           | Run the W3C manifest / PWA installability audit            | `true`                                                                         |
+| `audit_fail_on`          | `fail` or `never`; empty uses `web_manifest.audit.fail_on` | from config                                                                    |
+| `sarif_output`           | Write SARIF 2.1.0 for GitHub code scanning                 | disabled                                                                       |
+| `report_json`            | Write the machine-readable JSON audit report               | disabled                                                                       |
+| `recommendations_json`   | Write structured remediation recommendations               | disabled                                                                       |
+| `skips_json`             | Write the skipped-controls sidecar                         | disabled                                                                       |
+| `step_summary`           | Append the Markdown report to `$GITHUB_STEP_SUMMARY`       | `true`                                                                         |
+| `enable_ai_summary`      | Generate a natural-language findings summary               | `true`                                                                         |
+| `ai_provider`            | `auto`, `none`, or a named provider                        | `auto`                                                                         |
+
+### Additional Outputs
+
+`manifest_path` and `manifest_json` are joined by `config_sources`, `audit_verdict`,
+`audit_pass_count`, `audit_warn_count`, `audit_fail_count`, `audit_error_count`,
+`audit_skip_count`, `sarif_path`, `report_json_path`, `recommendations_json_path`,
+and `ai_summary`.
+
+`skip` findings are intentionally omitted from SARIF — they would clutter the Security
+tab with controls that were never assessed. Use `skips_json` when you need that record.
+
+## 🤖 AI Findings Summary
+
+When `enable_ai_summary` is on, the action asks a model for a three-bullet triage summary
+of the non-passing findings and appends it to the step summary and JSON report.
+
+- `ai_provider: auto` (default) uses **GitHub Models** whenever `GITHUB_MODELS_TOKEN` or
+  `GITHUB_TOKEN` is exposed to the job. Grant `models: read` in the job permissions.
+- `ai_provider: none` disables the model call.
+- Any other name uses `<NAME>_API_KEY` plus `<NAME>_API_ENDPOINT` from the environment.
+
+AI is never on the critical path: any missing credential, authorization failure, timeout,
+or transport error falls back to a deterministic local summary, and the run continues.
+
+## 🖥️ Local CLI
+
+The CLI shares every module with the Action, so a local dry-run produces the same report
+as CI — including auditing a manifest this action did not generate.
+
+```bash
+npm install
+
+# Resolve and print the merged configuration cascade
+npx bos-web-manifest validate
+
+# Audit any existing manifest and write every report artefact
+npx bos-web-manifest audit \
+  --public-dir dist \
+  --sarif manifest-audit.sarif \
+  --json manifest-audit.json \
+  --recommendations manifest-recommendations.json \
+  --fail-on never
+
+# Merge SARIF logs before a single code-scanning upload
+npx bos-web-manifest sarif --input a.sarif --input b.sarif --output merged.sarif
+```
+
+Exit codes: `0` success, `1` audit failed under the `fail` policy, `2` usage or
+configuration error.
 
 ## Usage
 

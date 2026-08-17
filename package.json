@@ -5,6 +5,9 @@
   "description": "Generate W3C-compliant web manifest files for Progressive Web Apps with full customization",
   "author": "Blackout Secure <https://github.com/blackoutsecure>",
   "main": "dist/index.js",
+  "bin": {
+    "bos-web-manifest": "src/cli.js"
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -29,6 +32,7 @@
   ],
   "scripts": {
     "build": "ncc build src/index.js -o dist",
+    "cli": "node src/cli.js",
     "prebuild": "npm run validate",
     "clean": "node test/cli.js clean",
     "prepare": "npm run build",
@@ -55,9 +59,7 @@
   "dependencies": {
     "@actions/artifact": "^2.1.2",
     "@actions/core": "^1.11.1",
-    "glob": "^10.3.10",
-    "node-html-parser": "^6.1.12",
-    "sitemap": "^8.0.0"
+    "js-yaml": "^4.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

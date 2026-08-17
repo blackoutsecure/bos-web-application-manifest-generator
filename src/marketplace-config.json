@@ -1,0 +1,50 @@
+{
+  "web_manifest": {
+    "generate": {
+      "filename": "site.webmanifest",
+      "inject_manifest_link": true,
+      "inject_pwa_meta_tags": true,
+      "inject_favicon_links": true,
+      "inject_mobile_web_app_capable": true,
+      "crossorigin_credentials": false
+    },
+    "audit": {
+      "enable": true,
+      "fail_on": "fail",
+      "max_size_kb": 128,
+      "rules": {
+        "require_name": "warn",
+        "require_short_name": "warn",
+        "require_icons": "warn",
+        "require_start_url": "warn",
+        "require_display": "warn",
+        "require_192_icon": "warn",
+        "require_512_icon": "warn",
+        "require_maskable_icon": "warn",
+        "forbid_any_maskable_combo": "warn",
+        "icon_files_exist": "warn",
+        "valid_theme_color": "warn",
+        "valid_background_color": "warn",
+        "valid_display_mode": "warn",
+        "valid_orientation": "warn",
+        "start_url_in_scope": "warn",
+        "require_id": "skip",
+        "valid_lang": "skip",
+        "require_manifest_link": "warn",
+        "file_size_limit": "warn",
+        "valid_json": "warn"
+      }
+    },
+    "reporting": {
+      "step_summary": true,
+      "sarif": true,
+      "json_report": true,
+      "recommendations": true
+    },
+    "remediation": {
+      "enable_ai_findings_summary": true,
+      "ai_findings_summary_provider": "auto",
+      "local_heuristic_fallback": true
+    }
+  }
+}
