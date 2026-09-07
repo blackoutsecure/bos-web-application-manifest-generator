@@ -268,6 +268,7 @@ function fromObject(doc, { sourcePath = '', sourcePaths = [], repoName = '' }) {
     generate: generateFromObject(readMapping(doc, 'generate')),
     audit: auditFromObject(readMapping(doc, 'audit')),
     reporting: reportingFromObject(readMapping(doc, 'reporting')),
+    redaction: redactionFromObject(readMapping(doc, 'redaction')),
     remediation: remediationFromObject(readMapping(doc, 'remediation')),
     sourcePath,
     sourcePaths: Object.freeze([...sourcePaths]),
@@ -325,6 +326,14 @@ function reportingFromObject(d) {
   });
 }
 
+function redactionFromObject(d) {
+  return Object.freeze({
+    enabled: readBool(d, 'enabled', true),
+    placeholder: readString(d, 'placeholder', '***'),
+    extraPatterns: Object.freeze(readStringList(d, 'extra_patterns')),
+  });
+}
+
 function remediationFromObject(d) {
   return Object.freeze({
     enableAiFindingsSummary: readBool(d, 'enable_ai_findings_summary', true),
@@ -353,6 +362,15 @@ function readString(d, key, fallback = '') {
     throw new ConfigError(`\`${key}\`: must be a string`);
   }
   return value.trim();
+}
+
+function readStringList(d, key) {
+  const value = d[key];
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+    throw new ConfigError(`\`${key}\`: must be a list of strings`);
+  }
+  return value.map((item) => item.trim()).filter(Boolean);
 }
 
 function readBool(d, key, fallback) {
